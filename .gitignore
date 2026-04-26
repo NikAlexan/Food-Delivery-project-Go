@@ -1,1 +1,32 @@
 CLAUDE.md
+
+# Binaries
+bin/
+*/bin/
+*.exe
+*.out
+
+# Go build cache
+**/__debug_bin
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes (if mounted locally)
+data/
+
+# Test coverage
+*.out
+coverage.html
