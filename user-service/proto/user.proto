@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "food-delivery/user-service/proto/pb";
+
+service UserService {
+  rpc RegisterUser(RegisterRequest)       returns (UserResponse);
+  rpc LoginUser(LoginRequest)             returns (TokenResponse);
+  rpc GetProfile(UserIdRequest)           returns (UserProfile);
+  rpc UpdateProfile(UpdateProfileRequest) returns (UserResponse);
+  rpc AddAddress(AddressRequest)          returns (AddressResponse);
+  rpc GetAddresses(UserIdRequest)         returns (AddressList);
+  rpc RefreshToken(RefreshRequest)        returns (TokenResponse);
+  rpc DeleteUser(UserIdRequest)           returns (Empty);
+}
+
+message RegisterRequest {
+  string email    = 1;
+  string password = 2;
+  string name     = 3;
+  string phone    = 4;
+  Address address = 5;
+}
+
+message LoginRequest {
+  string email    = 1;
+  string password = 2;
+}
+
+message UserIdRequest {
+  int64 user_id = 1;
+}
+
+message UpdateProfileRequest {
+  int64  user_id = 1;
+  string name    = 2;
+  string phone   = 3;
+}
+
+message AddressRequest {
+  int64  user_id    = 1;
+  string street     = 2;
+  string city       = 3;
+  string zip        = 4;
+  bool   is_default = 5;
+}
+
+message RefreshRequest {
+  string refresh_token = 1;
+}
+
+message UserResponse {
+  int64  user_id = 1;
+  string email   = 2;
+  string name    = 3;
+  string phone   = 4;
+}
+
+message TokenResponse {
+  string access_token  = 1;
+  string refresh_token = 2;
+}
+
+message UserProfile {
+  int64  user_id    = 1;
+  string email      = 2;
+  string name       = 3;
+  string phone      = 4;
+  string created_at = 5;
+}
+
+message Address {
+  int64  address_id = 1;
+  int64  user_id    = 2;
+  string street     = 3;
+  string city       = 4;
+  string zip        = 5;
+  bool   is_default = 6;
+}
+
+message AddressResponse {
+  Address address = 1;
+}
+
+message AddressList {
+  repeated Address addresses = 1;
+}
+
+message Empty {}
