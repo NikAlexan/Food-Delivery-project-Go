@@ -7,12 +7,29 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func grpcToHTTP(err error) int {
+var genericMessages = map[codes.Code]string{
+	codes.NotFound:         "resource not found",
+	codes.AlreadyExists:    "resource already exists",
+	codes.Unauthenticated:  "unauthenticated",
+	codes.PermissionDenied: "permission denied",
+	codes.InvalidArgument:  "invalid request",
+}
+
+// grpcError returns the HTTP status code and a safe message for the client.
+// Internal gRPC error details are never forwarded to avoid leaking service internals.
+func grpcError(err error) (int, string) {
 	s, ok := status.FromError(err)
 	if !ok {
-		return http.StatusInternalServerError
+		return http.StatusInternalServerError, "internal server error"
 	}
-	switch s.Code() {
+	if msg, found := genericMessages[s.Code()]; found {
+		return grpcToHTTP(s.Code()), msg
+	}
+	return http.StatusInternalServerError, "internal server error"
+}
+
+func grpcToHTTP(code codes.Code) int {
+	switch code {
 	case codes.NotFound:
 		return http.StatusNotFound
 	case codes.AlreadyExists:

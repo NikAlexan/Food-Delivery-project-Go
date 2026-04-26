@@ -2,6 +2,9 @@ package usecase
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"time"
 
@@ -113,7 +116,8 @@ func (u *userUsecase) GetAddresses(ctx context.Context, userID int64) ([]model.A
 }
 
 func (u *userUsecase) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
-	rt, err := u.repo.GetRefreshToken(ctx, refreshToken)
+	hashed := hashToken(refreshToken)
+	rt, err := u.repo.GetRefreshToken(ctx, hashed)
 	if errors.Is(err, repository.ErrNotFound) {
 		return "", "", ErrInvalidCredentials
 	}
@@ -124,7 +128,7 @@ func (u *userUsecase) RefreshToken(ctx context.Context, refreshToken string) (st
 		return "", "", ErrInvalidCredentials
 	}
 
-	if err := u.repo.DeleteRefreshToken(ctx, refreshToken); err != nil {
+	if err := u.repo.DeleteRefreshToken(ctx, hashed); err != nil {
 		return "", "", err
 	}
 
@@ -145,17 +149,25 @@ func (u *userUsecase) DeleteUser(ctx context.Context, userID int64) error {
 
 func (u *userUsecase) generateAccessToken(userID int64) (string, error) {
 	claims := jwt.MapClaims{
-		"sub": userID,
-		"exp": time.Now().Add(15 * time.Minute).Unix(),
+		"sub":  userID,
+		"exp":  time.Now().Add(15 * time.Minute).Unix(),
+		"type": "access",
 	}
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(u.jwtSecret)
 }
 
 func (u *userUsecase) generateRefreshToken(ctx context.Context, userID int64) (string, error) {
+	jti, err := randomHex(16)
+	if err != nil {
+		return "", err
+	}
+
 	claims := jwt.MapClaims{
 		"sub":  userID,
 		"exp":  time.Now().Add(7 * 24 * time.Hour).Unix(),
+		"iat":  time.Now().Unix(),
 		"type": "refresh",
+		"jti":  jti,
 	}
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(u.jwtSecret)
 	if err != nil {
@@ -164,11 +176,24 @@ func (u *userUsecase) generateRefreshToken(ctx context.Context, userID int64) (s
 
 	rt := &model.RefreshToken{
 		UserID:    userID,
-		Token:     token,
+		Token:     hashToken(token),
 		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
 	}
 	if err := u.repo.SaveRefreshToken(ctx, rt); err != nil {
 		return "", err
 	}
 	return token, nil
+}
+
+func hashToken(token string) string {
+	h := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(h[:])
+}
+
+func randomHex(n int) (string, error) {
+	b := make([]byte, n)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
 }

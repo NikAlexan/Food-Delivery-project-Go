@@ -11,6 +11,7 @@ import (
 )
 
 type UserProxy struct {
+	conn   *grpc.ClientConn
 	client pb.UserServiceClient
 }
 
@@ -19,7 +20,16 @@ func NewUserProxy(userServiceAddr string) (*UserProxy, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &UserProxy{client: pb.NewUserServiceClient(conn)}, nil
+	return &UserProxy{conn: conn, client: pb.NewUserServiceClient(conn)}, nil
+}
+
+func (p *UserProxy) Close() error {
+	return p.conn.Close()
+}
+
+func respondGRPCError(c *gin.Context, err error) {
+	code, msg := grpcError(err)
+	c.JSON(code, gin.H{"error": msg})
 }
 
 func (p *UserProxy) Register(c *gin.Context) {
@@ -31,7 +41,7 @@ func (p *UserProxy) Register(c *gin.Context) {
 
 	resp, err := p.client.RegisterUser(c.Request.Context(), &req)
 	if err != nil {
-		c.JSON(grpcToHTTP(err), gin.H{"error": err.Error()})
+		respondGRPCError(c, err)
 		return
 	}
 	c.JSON(http.StatusCreated, resp)
@@ -46,7 +56,7 @@ func (p *UserProxy) Login(c *gin.Context) {
 
 	resp, err := p.client.LoginUser(c.Request.Context(), &req)
 	if err != nil {
-		c.JSON(grpcToHTTP(err), gin.H{"error": err.Error()})
+		respondGRPCError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, resp)
@@ -56,7 +66,7 @@ func (p *UserProxy) GetProfile(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	resp, err := p.client.GetProfile(c.Request.Context(), &pb.UserIdRequest{UserId: userID})
 	if err != nil {
-		c.JSON(grpcToHTTP(err), gin.H{"error": err.Error()})
+		respondGRPCError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, resp)
@@ -73,7 +83,7 @@ func (p *UserProxy) UpdateProfile(c *gin.Context) {
 
 	resp, err := p.client.UpdateProfile(c.Request.Context(), &req)
 	if err != nil {
-		c.JSON(grpcToHTTP(err), gin.H{"error": err.Error()})
+		respondGRPCError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, resp)
@@ -90,7 +100,7 @@ func (p *UserProxy) AddAddress(c *gin.Context) {
 
 	resp, err := p.client.AddAddress(c.Request.Context(), &req)
 	if err != nil {
-		c.JSON(grpcToHTTP(err), gin.H{"error": err.Error()})
+		respondGRPCError(c, err)
 		return
 	}
 	c.JSON(http.StatusCreated, resp)
@@ -100,7 +110,7 @@ func (p *UserProxy) GetAddresses(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	resp, err := p.client.GetAddresses(c.Request.Context(), &pb.UserIdRequest{UserId: userID})
 	if err != nil {
-		c.JSON(grpcToHTTP(err), gin.H{"error": err.Error()})
+		respondGRPCError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, resp)
@@ -115,7 +125,7 @@ func (p *UserProxy) RefreshToken(c *gin.Context) {
 
 	resp, err := p.client.RefreshToken(c.Request.Context(), &req)
 	if err != nil {
-		c.JSON(grpcToHTTP(err), gin.H{"error": err.Error()})
+		respondGRPCError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, resp)
@@ -125,7 +135,7 @@ func (p *UserProxy) DeleteUser(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	_, err := p.client.DeleteUser(c.Request.Context(), &pb.UserIdRequest{UserId: userID})
 	if err != nil {
-		c.JSON(grpcToHTTP(err), gin.H{"error": err.Error()})
+		respondGRPCError(c, err)
 		return
 	}
 	c.Status(http.StatusNoContent)

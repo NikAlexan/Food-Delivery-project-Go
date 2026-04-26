@@ -28,8 +28,24 @@ func JWTAuth(secret string) gin.HandlerFunc {
 			return
 		}
 
-		claims, _ := token.Claims.(jwt.MapClaims)
-		c.Set("user_id", int64(claims["sub"].(float64)))
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			return
+		}
+
+		if typ, _ := claims["type"].(string); typ != "access" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token type"})
+			return
+		}
+
+		sub, ok := claims["sub"].(float64)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			return
+		}
+
+		c.Set("user_id", int64(sub))
 		c.Next()
 	}
 }
