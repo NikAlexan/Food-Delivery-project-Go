@@ -33,7 +33,7 @@ Svc     Svc       Svc          Svc
 | Минимум 12 gRPC Endpoints (3+ на сервис) | 20% | Каждый студент |
 | NATS Message Queue | 20% | Nurassyl (Order) + интеграция |
 | БД + миграции + транзакции | 20% | Каждый студент |
-| Email через SMTP (Gmail / Microsoft) | 10% | Student 4 (Delivery) |
+| Email через SMTP (Gmail / Microsoft) | 10% | Alikhan (Delivery) |
 | Тесты (Unit + Integration) | 10% | Каждый студент |
 | ⭐ Бонус: Frontend (JS / Native) | +10% | Nikita (по желанию) |
 | ⭐ Бонус: Grafana (трейсинг, метрики, логи) | +10% | Abzal (по желанию) |
@@ -229,7 +229,7 @@ order-service/
 
 ---
 
-## 🚴 Student 4 — Delivery Service + Email
+## 🚴 Alikhan Maratbekov — Delivery Service + Email
 
 > Трекинг доставки, назначение курьеров и отправка email-уведомлений через SMTP.
 
