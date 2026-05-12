@@ -1,0 +1,111 @@
+@baseUrl = http://localhost:8083
+@contentType = application/json
+
+### Variables — fill after login (use the same token from user-service)
+@accessToken = <paste_access_token_here>
+
+
+### Calculate total before placing order
+POST {{baseUrl}}/api/orders/total
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "items": [
+    { "menu_item_id": 1, "name": "Burger", "quantity": 2, "price": 1500 },
+    { "menu_item_id": 2, "name": "Fries",  "quantity": 1, "price": 500  }
+  ]
+}
+
+
+### Create order
+# @name createOrder
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "restaurant_id": 1,
+  "items": [
+    { "menu_item_id": 1, "name": "Burger", "quantity": 2, "price": 1500 },
+    { "menu_item_id": 2, "name": "Fries",  "quantity": 1, "price": 500  }
+  ]
+}
+
+
+### Create order — empty items (expect 400)
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "restaurant_id": 1,
+  "items": []
+}
+
+
+### Get order by ID
+# @name getOrder
+GET {{baseUrl}}/api/orders/1
+Authorization: Bearer {{accessToken}}
+
+
+### Get order — not found (expect 404)
+GET {{baseUrl}}/api/orders/99999
+Authorization: Bearer {{accessToken}}
+
+
+### List my orders
+GET {{baseUrl}}/api/orders
+Authorization: Bearer {{accessToken}}
+
+
+### Get order history
+GET {{baseUrl}}/api/orders/history
+Authorization: Bearer {{accessToken}}
+
+
+### Update order status (admin use)
+PATCH {{baseUrl}}/api/orders/1/status
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "status": "delivered"
+}
+
+
+### Pay for order
+POST {{baseUrl}}/api/orders/1/pay
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "method": "card",
+  "amount": 3500
+}
+
+
+### Pay — order not found (expect 404)
+POST {{baseUrl}}/api/orders/99999/pay
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "method": "card",
+  "amount": 1000
+}
+
+
+### Cancel order
+POST {{baseUrl}}/api/orders/1/cancel
+Authorization: Bearer {{accessToken}}
+
+
+### Cancel already cancelled (expect 422)
+POST {{baseUrl}}/api/orders/1/cancel
+Authorization: Bearer {{accessToken}}
+
+
+### No token (expect 401)
+GET {{baseUrl}}/api/orders
