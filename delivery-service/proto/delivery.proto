@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package delivery;
+
+option go_package = "food-delivery/delivery-service/proto/pb";
+
+service DeliveryService {
+  rpc AssignDriver(AssignRequest) returns (Delivery);
+  rpc GetDelivery(DeliveryIdRequest) returns (Delivery);
+  rpc UpdateDriverLocation(LocationRequest) returns (Empty);
+  rpc TrackDelivery(DeliveryIdRequest) returns (DeliveryStatus);
+  rpc CompleteDelivery(DeliveryIdRequest) returns (Delivery);
+  rpc ListDriverDeliveries(DriverIdRequest) returns (DeliveryList);
+  rpc GetDeliveryHistory(UserIdRequest) returns (DeliveryList);
+  rpc CancelDelivery(DeliveryIdRequest) returns (Delivery);
+}
+
+message AssignRequest {
+  int64 order_id = 1;
+  int64 user_id = 2;
+  string user_email = 3;
+  string delivery_address = 4;
+}
+
+message DeliveryIdRequest {
+  int64 delivery_id = 1;
+}
+
+message DriverIdRequest {
+  int64 driver_id = 1;
+}
+
+message UserIdRequest {
+  int64 user_id = 1;
+}
+
+message LocationRequest {
+  int64 driver_id = 1;
+  double latitude = 2;
+  double longitude = 3;
+}
+
+message Delivery {
+  int64 delivery_id = 1;
+  int64 order_id = 2;
+  int64 user_id = 3;
+  string user_email = 4;
+  int64 driver_id = 5;
+  string driver_name = 6;
+  string driver_email = 7;
+  string driver_phone = 8;
+  string status = 9;
+  string delivery_address = 10;
+  string created_at = 11;
+  string updated_at = 12;
+  string assigned_at = 13;
+  string completed_at = 14;
+  double current_latitude = 15;
+  double current_longitude = 16;
+}
+
+message DeliveryStatus {
+  int64 delivery_id = 1;
+  string status = 2;
+  string driver_name = 3;
+  double current_latitude = 4;
+  double current_longitude = 5;
+  string updated_at = 6;
+}
+
+message DeliveryList {
+  repeated Delivery deliveries = 1;
+}
+
+message Empty {}

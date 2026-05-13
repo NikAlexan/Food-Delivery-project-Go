@@ -7,7 +7,7 @@ import (
 	"food-delivery/api-gateway/internal/proxy"
 )
 
-func New(userProxy *proxy.UserProxy, jwtSecret string) *gin.Engine {
+func New(userProxy *proxy.UserProxy, deliveryProxy *proxy.DeliveryProxy, jwtSecret string) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(middleware.RequestLogger())
@@ -26,6 +26,18 @@ func New(userProxy *proxy.UserProxy, jwtSecret string) *gin.Engine {
 			auth.POST("/addresses", userProxy.AddAddress)
 			auth.GET("/addresses", userProxy.GetAddresses)
 		}
+	}
+
+	delivery := r.Group("/api/delivery", middleware.JWTAuth(jwtSecret))
+	{
+		delivery.POST("/assign", deliveryProxy.AssignDriver)
+		delivery.PATCH("/location", deliveryProxy.UpdateDriverLocation)
+		delivery.POST("/:id/complete", deliveryProxy.CompleteDelivery)
+		delivery.GET("/drivers/:driverId", deliveryProxy.ListDriverDeliveries)
+		delivery.GET("/history", deliveryProxy.GetDeliveryHistory)
+		delivery.GET("/:id", deliveryProxy.GetDelivery)
+		delivery.GET("/:id/track", deliveryProxy.TrackDelivery)
+		delivery.POST("/:id/cancel", deliveryProxy.CancelDelivery)
 	}
 
 	return r
