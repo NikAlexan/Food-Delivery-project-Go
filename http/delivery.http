@@ -1,42 +1,60 @@
-### Assign driver
-POST http://localhost:8080/api/delivery/assign
-Content-Type: application/json
-Authorization: Bearer {{access_token}}
+@baseUrl = http://localhost:8080
+@contentType = application/json
+@accessToken = <paste_access_token_here>
+@deliveryId = 1
+@driverId = 1
+
+
+### 1. Assign driver to order
+POST {{baseUrl}}/api/delivery/assign
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
 
 {
-  "order_id": 1001,
-  "user_id": 42,
-  "user_email": "user@example.com",
+  "order_id": 1,
+  "user_id": 1,
+  "user_email": "nikita@example.com",
   "delivery_address": "Abay 10, Almaty"
 }
 
-### Update driver location
-PATCH http://localhost:8080/api/delivery/location
-Content-Type: application/json
-Authorization: Bearer {{access_token}}
+
+### 2. Track delivery (polling)
+GET {{baseUrl}}/api/delivery/{{deliveryId}}/track
+Authorization: Bearer {{accessToken}}
+
+
+### 3. Get delivery details
+GET {{baseUrl}}/api/delivery/{{deliveryId}}
+Authorization: Bearer {{accessToken}}
+
+
+### 4. Update driver location
+PATCH {{baseUrl}}/api/delivery/location
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
 
 {
-  "driver_id": 1,
+  "driver_id": {{driverId}},
   "latitude": 43.238949,
   "longitude": 76.889709
 }
 
-### Get delivery history
-GET http://localhost:8080/api/delivery/history
-Authorization: Bearer {{access_token}}
 
-### Track delivery
-GET http://localhost:8080/api/delivery/1/track
-Authorization: Bearer {{access_token}}
+### 5. List driver's deliveries
+GET {{baseUrl}}/api/delivery/drivers/{{driverId}}
+Authorization: Bearer {{accessToken}}
 
-### Complete delivery
-POST http://localhost:8080/api/delivery/1/complete
-Authorization: Bearer {{access_token}}
 
-### Get delivery
-GET http://localhost:8080/api/delivery/1
-Authorization: Bearer {{access_token}}
+### 6. Get my delivery history
+GET {{baseUrl}}/api/delivery/history
+Authorization: Bearer {{accessToken}}
 
-### Cancel delivery
-POST http://localhost:8080/api/delivery/1/cancel
-Authorization: Bearer {{access_token}}
+
+### 7. Complete delivery
+POST {{baseUrl}}/api/delivery/{{deliveryId}}/complete
+Authorization: Bearer {{accessToken}}
+
+
+### 8. Cancel delivery
+POST {{baseUrl}}/api/delivery/{{deliveryId}}/cancel
+Authorization: Bearer {{accessToken}}

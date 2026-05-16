@@ -1,0 +1,73 @@
+@baseUrl = http://localhost:8080
+@contentType = application/json
+@accessToken = <paste_access_token_here>
+@orderId = 1
+
+
+### 1. Calculate total (before placing order)
+POST {{baseUrl}}/api/orders/calculate
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "items": [
+    { "menu_item_id": 1, "name": "Margherita", "quantity": 2, "price": 2500 },
+    { "menu_item_id": 2, "name": "Cola",       "quantity": 1, "price": 500  }
+  ]
+}
+
+
+### 2. Create order  →  скопируй id в @orderId выше
+# @name createOrder
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "restaurant_id": 1,
+  "items": [
+    { "menu_item_id": 1, "name": "Margherita", "quantity": 2, "price": 2500 },
+    { "menu_item_id": 2, "name": "Cola",       "quantity": 1, "price": 500  }
+  ]
+}
+
+
+### 3. Get order
+GET {{baseUrl}}/api/orders/{{orderId}}
+Authorization: Bearer {{accessToken}}
+
+
+### 4. List my orders
+GET {{baseUrl}}/api/orders
+Authorization: Bearer {{accessToken}}
+
+
+### 5. Get order history
+GET {{baseUrl}}/api/orders/history
+Authorization: Bearer {{accessToken}}
+
+
+### 6. Update order status  [AUTH]
+PATCH {{baseUrl}}/api/orders/{{orderId}}/status
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "status": "preparing"
+}
+
+
+### 7. Process payment
+POST {{baseUrl}}/api/orders/{{orderId}}/payment
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "method": "card",
+  "amount": 5500
+}
+
+
+### 8. Cancel order
+POST {{baseUrl}}/api/orders/{{orderId}}/cancel
+Authorization: Bearer {{accessToken}}

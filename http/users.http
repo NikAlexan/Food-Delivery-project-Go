@@ -1,12 +1,12 @@
 @baseUrl = http://localhost:8080
 @contentType = application/json
 
-### Variables — fill after login
+### Variables — заполни после login
 @accessToken = <paste_access_token_here>
 @refreshToken = <paste_refresh_token_here>
 
 
-### Register a new user
+### 1. Register
 # @name register
 POST {{baseUrl}}/api/users/register
 Content-Type: {{contentType}}
@@ -15,29 +15,11 @@ Content-Type: {{contentType}}
   "email": "nikita@example.com",
   "password": "strongpassword123",
   "name": "Nikita Vassilenko",
-  "phone": "+77001234567",
-  "address": {
-    "street": "Abay 1",
-    "city": "Almaty",
-    "zip": "050000",
-    "is_default": true
-  }
+  "phone": "+77001234567"
 }
 
 
-### Register — duplicate email (expect 409)
-POST {{baseUrl}}/api/users/register
-Content-Type: {{contentType}}
-
-{
-  "email": "nikita@example.com",
-  "password": "anotherpassword",
-  "name": "Other",
-  "phone": ""
-}
-
-
-### Login
+### 2. Login  →  скопируй access_token и refresh_token в переменные выше
 # @name login
 POST {{baseUrl}}/api/users/login
 Content-Type: {{contentType}}
@@ -48,18 +30,7 @@ Content-Type: {{contentType}}
 }
 
 
-### Login — wrong password (expect 401)
-POST {{baseUrl}}/api/users/login
-Content-Type: {{contentType}}
-
-{
-  "email": "nikita@example.com",
-  "password": "wrongpassword"
-}
-
-
-### Refresh access token
-# @name refresh
+### 3. Refresh access token
 POST {{baseUrl}}/api/users/refresh
 Content-Type: {{contentType}}
 
@@ -68,30 +39,12 @@ Content-Type: {{contentType}}
 }
 
 
-### Refresh — invalid token (expect 401)
-POST {{baseUrl}}/api/users/refresh
-Content-Type: {{contentType}}
-
-{
-  "refresh_token": "this.is.not.a.valid.token"
-}
-
-
-### Get profile  [AUTH]
+### 4. Get profile  [AUTH]
 GET {{baseUrl}}/api/users/profile
 Authorization: Bearer {{accessToken}}
 
 
-### Get profile — no token (expect 401)
-GET {{baseUrl}}/api/users/profile
-
-
-### Get profile — refresh token as bearer (expect 401)
-GET {{baseUrl}}/api/users/profile
-Authorization: Bearer {{refreshToken}}
-
-
-### Update profile  [AUTH]
+### 5. Update profile  [AUTH]
 PUT {{baseUrl}}/api/users/profile
 Authorization: Bearer {{accessToken}}
 Content-Type: {{contentType}}
@@ -102,7 +55,7 @@ Content-Type: {{contentType}}
 }
 
 
-### Add address  [AUTH]
+### 6. Add address  [AUTH]
 POST {{baseUrl}}/api/users/addresses
 Authorization: Bearer {{accessToken}}
 Content-Type: {{contentType}}
@@ -115,11 +68,11 @@ Content-Type: {{contentType}}
 }
 
 
-### Get addresses  [AUTH]
+### 7. Get addresses  [AUTH]
 GET {{baseUrl}}/api/users/addresses
 Authorization: Bearer {{accessToken}}
 
 
-### Delete account  [AUTH]
+### 8. Delete account  [AUTH]
 DELETE {{baseUrl}}/api/users/me
 Authorization: Bearer {{accessToken}}

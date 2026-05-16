@@ -1,0 +1,82 @@
+@baseUrl = http://localhost:8080
+@contentType = application/json
+@accessToken = <paste_access_token_here>
+@restaurantId = 1
+@menuItemId = 1
+
+
+### 1. List restaurants  (public)
+GET {{baseUrl}}/api/restaurants
+
+
+### 2. Search restaurants  (public)
+GET {{baseUrl}}/api/restaurants/search?q=pizza
+
+
+### 3. Get restaurant  (public)
+GET {{baseUrl}}/api/restaurants/{{restaurantId}}
+
+
+### 4. Get menu  (public)
+GET {{baseUrl}}/api/restaurants/{{restaurantId}}/menu
+
+
+### 5. Create restaurant  [AUTH]
+POST {{baseUrl}}/api/restaurants
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Pizza House",
+  "description": "Best pizza in town",
+  "address": "Abay 1, Almaty",
+  "phone": "+77001112233",
+  "category_id": 1
+}
+
+
+### 6. Update restaurant  [AUTH]
+PUT {{baseUrl}}/api/restaurants/{{restaurantId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Pizza House Updated",
+  "description": "Even better pizza",
+  "address": "Abay 2, Almaty",
+  "phone": "+77001112234"
+}
+
+
+### 7. Create menu item  [AUTH]
+POST {{baseUrl}}/api/restaurants/{{restaurantId}}/menu
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Margherita",
+  "description": "Classic tomato and mozzarella",
+  "price": 2500,
+  "category_id": 1
+}
+
+
+### 8. Update menu item  [AUTH]
+PUT {{baseUrl}}/api/restaurants/{{restaurantId}}/menu/{{menuItemId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Margherita XL",
+  "price": 3200
+}
+
+
+### 9. Delete menu item  [AUTH]
+DELETE {{baseUrl}}/api/restaurants/{{restaurantId}}/menu/{{menuItemId}}
+Authorization: Bearer {{accessToken}}
+
+
+### 10. Delete restaurant  [AUTH]
+DELETE {{baseUrl}}/api/restaurants/{{restaurantId}}
+Authorization: Bearer {{accessToken}}
