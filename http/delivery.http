@@ -1,0 +1,42 @@
+### Assign driver
+POST http://localhost:8080/api/delivery/assign
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "order_id": 1001,
+  "user_id": 42,
+  "user_email": "user@example.com",
+  "delivery_address": "Abay 10, Almaty"
+}
+
+### Update driver location
+PATCH http://localhost:8080/api/delivery/location
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "driver_id": 1,
+  "latitude": 43.238949,
+  "longitude": 76.889709
+}
+
+### Get delivery history
+GET http://localhost:8080/api/delivery/history
+Authorization: Bearer {{access_token}}
+
+### Track delivery
+GET http://localhost:8080/api/delivery/1/track
+Authorization: Bearer {{access_token}}
+
+### Complete delivery
+POST http://localhost:8080/api/delivery/1/complete
+Authorization: Bearer {{access_token}}
+
+### Get delivery
+GET http://localhost:8080/api/delivery/1
+Authorization: Bearer {{access_token}}
+
+### Cancel delivery
+POST http://localhost:8080/api/delivery/1/cancel
+Authorization: Bearer {{access_token}}

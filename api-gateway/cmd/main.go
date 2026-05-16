@@ -17,6 +17,8 @@ import (
 func main() {
 	userServiceAddr := getEnv("USER_SERVICE_ADDR", "localhost:50051")
 	restaurantServiceAddr := getEnv("RESTAURANT_SERVICE_ADDR", "localhost:50052")
+	orderServiceAddr := getEnv("ORDER_SERVICE_ADDR", "localhost:50053")
+	deliveryServiceAddr := getEnv("DELIVERY_SERVICE_ADDR", "localhost:50054")
 	jwtSecret := getEnv("JWT_SECRET", "change-me-in-production")
 	httpAddr := getEnv("HTTP_ADDR", ":8080")
 
@@ -32,9 +34,21 @@ func main() {
 	}
 	defer restaurantProxy.Close()
 
+	deliveryProxy, err := proxy.NewDeliveryProxy(deliveryServiceAddr)
+	if err != nil {
+		log.Fatalf("connect delivery-service: %v", err)
+	}
+	defer deliveryProxy.Close()
+
+	orderProxy, err := proxy.NewOrderProxy(orderServiceAddr)
+	if err != nil {
+		log.Fatalf("connect order-service: %v", err)
+	}
+	defer orderProxy.Close()
+
 	srv := &http.Server{
 		Addr:    httpAddr,
-		Handler: router.New(userProxy, restaurantProxy, jwtSecret),
+		Handler: router.New(userProxy, deliveryProxy, restaurantProxy, orderProxy, jwtSecret),
 	}
 
 	go func() {

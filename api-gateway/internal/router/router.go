@@ -7,7 +7,7 @@ import (
 	"food-delivery/api-gateway/internal/proxy"
 )
 
-func New(userProxy *proxy.UserProxy, restaurantProxy *proxy.RestaurantProxy, jwtSecret string) *gin.Engine {
+func New(userProxy *proxy.UserProxy, deliveryProxy *proxy.DeliveryProxy, restaurantProxy *proxy.RestaurantProxy, orderProxy *proxy.OrderProxy, jwtSecret string) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(middleware.RequestLogger())
@@ -46,6 +46,31 @@ func New(userProxy *proxy.UserProxy, restaurantProxy *proxy.RestaurantProxy, jwt
 			auth.PUT("/:id/menu/:item_id", restaurantProxy.UpdateMenuItem)
 			auth.DELETE("/:id/menu/:item_id", restaurantProxy.DeleteMenuItem)
 		}
+	}
+
+	delivery := r.Group("/api/delivery", middleware.JWTAuth(jwtSecret))
+	{
+		delivery.POST("/assign", deliveryProxy.AssignDriver)
+		delivery.PATCH("/location", deliveryProxy.UpdateDriverLocation)
+		delivery.POST("/:id/complete", deliveryProxy.CompleteDelivery)
+		delivery.GET("/drivers/:driverId", deliveryProxy.ListDriverDeliveries)
+		delivery.GET("/history", deliveryProxy.GetDeliveryHistory)
+		delivery.GET("/:id", deliveryProxy.GetDelivery)
+		delivery.GET("/:id/track", deliveryProxy.TrackDelivery)
+		delivery.POST("/:id/cancel", deliveryProxy.CancelDelivery)
+	}
+
+	// ── Orders (auth required) ────────────────────────────────────────────────
+	orders := r.Group("/api/orders", middleware.JWTAuth(jwtSecret))
+	{
+		orders.POST("", orderProxy.CreateOrder)
+		orders.GET("", orderProxy.ListUserOrders)
+		orders.GET("/history", orderProxy.GetOrderHistory)
+		orders.POST("/calculate", orderProxy.CalculateTotal)
+		orders.GET("/:id", orderProxy.GetOrder)
+		orders.PATCH("/:id/status", orderProxy.UpdateOrderStatus)
+		orders.POST("/:id/cancel", orderProxy.CancelOrder)
+		orders.POST("/:id/payment", orderProxy.ProcessPayment)
 	}
 
 	return r

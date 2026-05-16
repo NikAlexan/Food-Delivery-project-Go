@@ -1,0 +1,12 @@
+-- +goose Up
+CREATE TABLE IF NOT EXISTS drivers (
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    phone TEXT NOT NULL,
+    is_available BOOLEAN NOT NULL DEFAULT TRUE,
+    current_latitude DOUBLE PRECISION NOT NULL DEFAULT 0,
+    current_longitude DOUBLE PRECISION NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
