@@ -109,11 +109,14 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      nats:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres-user:5432/userdb?sslmode=disable
       REDIS_ADDR: redis:6379
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       GRPC_ADDR: :50051
+      NATS_URL: nats://nats:4222
     ports:
       - "50051:50051"
     healthcheck:
