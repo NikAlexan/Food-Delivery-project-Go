@@ -28,15 +28,26 @@ function logout() {
         <NuxtLink to="/restaurants" class="hover:text-brand-600 transition-colors">Рестораны</NuxtLink>
 
         <template v-if="auth.isLoggedIn">
-          <NuxtLink to="/orders" class="hover:text-brand-600 transition-colors">Заказы</NuxtLink>
+          <template v-if="auth.role === 'driver'">
+            <NuxtLink to="/driver" class="hover:text-brand-600 transition-colors">Мои доставки</NuxtLink>
+          </template>
+
+          <template v-else-if="auth.role === 'manager'">
+            <NuxtLink to="/restaurant" class="hover:text-brand-600 transition-colors">Мой ресторан</NuxtLink>
+          </template>
+
+          <template v-else>
+            <NuxtLink to="/orders" class="hover:text-brand-600 transition-colors">Заказы</NuxtLink>
+            <NuxtLink to="/cart" class="relative hover:text-brand-600 transition-colors">
+              🛒
+              <span
+                v-if="cart.count > 0"
+                class="absolute -top-2 -right-2 bg-brand-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
+              >{{ cart.count }}</span>
+            </NuxtLink>
+          </template>
+
           <NuxtLink to="/profile" class="hover:text-brand-600 transition-colors">Профиль</NuxtLink>
-          <NuxtLink to="/cart" class="relative hover:text-brand-600 transition-colors">
-            🛒
-            <span
-              v-if="cart.count > 0"
-              class="absolute -top-2 -right-2 bg-brand-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
-            >{{ cart.count }}</span>
-          </NuxtLink>
           <button @click="logout" class="text-gray-400 hover:text-red-500 transition-colors">Выйти</button>
         </template>
 
