@@ -1,3 +1,4 @@
+-- +goose Up
 CREATE TABLE IF NOT EXISTS deliveries (
     id BIGSERIAL PRIMARY KEY,
     order_id BIGINT NOT NULL UNIQUE,

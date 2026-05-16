@@ -6,6 +6,7 @@ require (
 	food-delivery/restaurant-service v0.0.0
 	food-delivery/delivery-service v0.0.0
 	food-delivery/user-service v0.0.0
+	food-delivery/order-service v0.0.0
 	github.com/gin-gonic/gin v1.12.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	google.golang.org/grpc v1.80.0
@@ -49,3 +50,5 @@ replace food-delivery/user-service => ../user-service
 replace food-delivery/restaurant-service => ../restaurant-service
 
 replace food-delivery/delivery-service => ../delivery-service
+
+replace food-delivery/order-service => ../order-service

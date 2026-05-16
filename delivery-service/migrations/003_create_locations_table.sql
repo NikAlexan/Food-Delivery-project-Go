@@ -1,3 +1,4 @@
+-- +goose Up
 CREATE TABLE IF NOT EXISTS locations (
     id BIGSERIAL PRIMARY KEY,
     driver_id BIGINT NOT NULL REFERENCES drivers(id) ON DELETE CASCADE,

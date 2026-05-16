@@ -1,3 +1,4 @@
+-- +goose Up
 CREATE TABLE IF NOT EXISTS drivers (
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
