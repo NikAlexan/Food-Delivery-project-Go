@@ -3,6 +3,7 @@ module food-delivery/api-gateway
 go 1.26.1
 
 require (
+	food-delivery/restaurant-service v0.0.0
 	food-delivery/user-service v0.0.0
 	github.com/gin-gonic/gin v1.12.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
@@ -43,3 +44,5 @@ require (
 )
 
 replace food-delivery/user-service => ../user-service
+
+replace food-delivery/restaurant-service => ../restaurant-service
