@@ -49,6 +49,7 @@ message UpdateRestaurantRequest {
   string phone         = 5;
   string image_url     = 6;
   bool   is_active     = 7;
+  double rating        = 8;
 }
 
 message ListRestaurantsRequest {

@@ -12,15 +12,15 @@ import (
 )
 
 var (
-	ErrOrderNotFound  = errors.New("order not found")
-	ErrEmptyItems     = errors.New("order must have at least one item")
+	ErrOrderNotFound    = errors.New("order not found")
+	ErrEmptyItems       = errors.New("order must have at least one item")
 	ErrAlreadyCancelled = errors.New("order already cancelled")
 )
 
 const deliveryFee = 500.0 // flat KZT
 
 type OrderUsecase interface {
-	CreateOrder(ctx context.Context, userID, restaurantID int64, items []model.OrderItem) (*model.Order, error)
+	CreateOrder(ctx context.Context, userID, restaurantID int64, items []model.OrderItem, deliveryAddress, userEmail string) (*model.Order, error)
 	GetOrder(ctx context.Context, orderID int64) (*model.Order, error)
 	ListUserOrders(ctx context.Context, userID int64) ([]model.Order, error)
 	UpdateOrderStatus(ctx context.Context, orderID int64, status model.OrderStatus) (*model.Order, error)
@@ -46,7 +46,7 @@ func (u *orderUsecase) cacheDel(ctx context.Context, id int64) {
 	}
 }
 
-func (u *orderUsecase) CreateOrder(ctx context.Context, userID, restaurantID int64, items []model.OrderItem) (*model.Order, error) {
+func (u *orderUsecase) CreateOrder(ctx context.Context, userID, restaurantID int64, items []model.OrderItem, deliveryAddress, userEmail string) (*model.Order, error) {
 	if len(items) == 0 {
 		return nil, ErrEmptyItems
 	}
@@ -54,11 +54,13 @@ func (u *orderUsecase) CreateOrder(ctx context.Context, userID, restaurantID int
 	_, _, total := u.CalculateTotal(ctx, items)
 
 	order := &model.Order{
-		UserID:       userID,
-		RestaurantID: restaurantID,
-		Items:        items,
-		Status:       model.StatusPending,
-		Total:        total,
+		UserID:          userID,
+		RestaurantID:    restaurantID,
+		Items:           items,
+		Status:          model.StatusPending,
+		Total:           total,
+		DeliveryAddress: deliveryAddress,
+		UserEmail:       userEmail,
 	}
 
 	if err := u.repo.CreateOrderWithItems(ctx, order); err != nil {
@@ -66,7 +68,12 @@ func (u *orderUsecase) CreateOrder(ctx context.Context, userID, restaurantID int
 	}
 
 	// Publish order.created — Delivery Service subscribes to this
-	_ = u.publisher.Publish(ctx, "order.created", order)
+	_ = u.publisher.Publish(ctx, "order.created", model.OrderCreatedEvent{
+		OrderID:         order.ID,
+		UserID:          order.UserID,
+		UserEmail:       order.UserEmail,
+		DeliveryAddress: order.DeliveryAddress,
+	})
 
 	return order, nil
 }

@@ -27,16 +27,16 @@ Svc     Svc       Svc          Svc
 
 ## Требования и баллы
 
-| Требование | Баллы | Ответственный |
-|---|:-:|---|
-| Clean Architecture | 20% | Каждый студент |
-| Минимум 12 gRPC Endpoints (3+ на сервис) | 20% | Каждый студент |
-| NATS Message Queue | 20% | Nurassyl (Order) + интеграция |
-| БД + миграции + транзакции | 20% | Каждый студент |
-| Email через SMTP (Gmail / Microsoft) | 10% | Alikhan (Delivery) |
-| Тесты (Unit + Integration) | 10% | Каждый студент |
-| ⭐ Бонус: Frontend (JS / Native) | +10% | Nikita (по желанию) |
-| ⭐ Бонус: Grafana (трейсинг, метрики, логи) | +10% | Abzal (по желанию) |
+| Требование | Баллы | Ответственный | Статус |
+|---|:-:|---|:-:|
+| Clean Architecture | 20% | Каждый студент | ✅ Выполнено |
+| Минимум 12 gRPC Endpoints (3+ на сервис) | 20% | Каждый студент | ✅ Выполнено (34 endpoint'а) |
+| NATS Message Queue | 20% | Nurassyl (Order) + интеграция | ✅ Выполнено |
+| БД + миграции + транзакции | 20% | Каждый студент | ✅ Выполнено |
+| Email через SMTP (Gmail / Microsoft) | 10% | Alikhan (Delivery) | ✅ Выполнено (MailHog) |
+| Тесты (Unit + Integration) | 10% | Каждый студент | ✅ Выполнено |
+| ⭐ Бонус: Frontend (JS / Native) | +10% | Nikita (по желанию) | ✅ Выполнено (Nuxt/Vue) |
+| ⭐ Бонус: Grafana (трейсинг, метрики, логи) | +10% | Abzal (по желанию) | ❌ Не реализовано |
 
 ---
 

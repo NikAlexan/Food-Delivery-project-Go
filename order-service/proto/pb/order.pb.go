@@ -266,12 +266,14 @@ func (x *Payment) GetMethod() string {
 }
 
 type CreateOrderRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	RestaurantId  int64                  `protobuf:"varint,2,opt,name=restaurant_id,json=restaurantId,proto3" json:"restaurant_id,omitempty"`
-	Items         []*OrderItem           `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	UserId          int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	RestaurantId    int64                  `protobuf:"varint,2,opt,name=restaurant_id,json=restaurantId,proto3" json:"restaurant_id,omitempty"`
+	Items           []*OrderItem           `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
+	DeliveryAddress string                 `protobuf:"bytes,4,opt,name=delivery_address,json=deliveryAddress,proto3" json:"delivery_address,omitempty"`
+	UserEmail       string                 `protobuf:"bytes,5,opt,name=user_email,json=userEmail,proto3" json:"user_email,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *CreateOrderRequest) Reset() {
@@ -323,6 +325,20 @@ func (x *CreateOrderRequest) GetItems() []*OrderItem {
 		return x.Items
 	}
 	return nil
+}
+
+func (x *CreateOrderRequest) GetDeliveryAddress() string {
+	if x != nil {
+		return x.DeliveryAddress
+	}
+	return ""
+}
+
+func (x *CreateOrderRequest) GetUserEmail() string {
+	if x != nil {
+		return x.UserEmail
+	}
+	return ""
 }
 
 type OrderIdRequest struct {
@@ -752,11 +768,14 @@ const file_order_proto_rawDesc = "" +
 	"\border_id\x18\x02 \x01(\x03R\aorderId\x12\x16\n" +
 	"\x06status\x18\x03 \x01(\tR\x06status\x12\x16\n" +
 	"\x06amount\x18\x04 \x01(\x01R\x06amount\x12\x16\n" +
-	"\x06method\x18\x05 \x01(\tR\x06method\"z\n" +
+	"\x06method\x18\x05 \x01(\tR\x06method\"\xc4\x01\n" +
 	"\x12CreateOrderRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12#\n" +
 	"\rrestaurant_id\x18\x02 \x01(\x03R\frestaurantId\x12&\n" +
-	"\x05items\x18\x03 \x03(\v2\x10.order.OrderItemR\x05items\"+\n" +
+	"\x05items\x18\x03 \x03(\v2\x10.order.OrderItemR\x05items\x12)\n" +
+	"\x10delivery_address\x18\x04 \x01(\tR\x0fdeliveryAddress\x12\x1d\n" +
+	"\n" +
+	"user_email\x18\x05 \x01(\tR\tuserEmail\"+\n" +
 	"\x0eOrderIdRequest\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\x03R\aorderId\"(\n" +
 	"\rUserIdRequest\x12\x17\n" +
