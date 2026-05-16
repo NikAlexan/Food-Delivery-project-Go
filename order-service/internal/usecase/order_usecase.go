@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"food-delivery/order-service/internal/cache"
 	"food-delivery/order-service/internal/model"
 	appnats "food-delivery/order-service/internal/nats"
 	"food-delivery/order-service/internal/repository"
@@ -32,10 +33,17 @@ type OrderUsecase interface {
 type orderUsecase struct {
 	repo      repository.OrderRepository
 	publisher appnats.Publisher
+	cache     *cache.OrderCache
 }
 
-func NewOrderUsecase(repo repository.OrderRepository, publisher appnats.Publisher) OrderUsecase {
-	return &orderUsecase{repo: repo, publisher: publisher}
+func NewOrderUsecase(repo repository.OrderRepository, publisher appnats.Publisher, orderCache *cache.OrderCache) OrderUsecase {
+	return &orderUsecase{repo: repo, publisher: publisher, cache: orderCache}
+}
+
+func (u *orderUsecase) cacheDel(ctx context.Context, id int64) {
+	if u.cache != nil {
+		u.cache.DeleteStatus(ctx, id)
+	}
 }
 
 func (u *orderUsecase) CreateOrder(ctx context.Context, userID, restaurantID int64, items []model.OrderItem) (*model.Order, error) {
@@ -68,7 +76,10 @@ func (u *orderUsecase) GetOrder(ctx context.Context, orderID int64) (*model.Orde
 	if errors.Is(err, repository.ErrNotFound) {
 		return nil, ErrOrderNotFound
 	}
-	return order, err
+	if err != nil {
+		return nil, err
+	}
+	return order, nil
 }
 
 func (u *orderUsecase) ListUserOrders(ctx context.Context, userID int64) ([]model.Order, error) {
@@ -80,7 +91,11 @@ func (u *orderUsecase) UpdateOrderStatus(ctx context.Context, orderID int64, sta
 	if errors.Is(err, repository.ErrNotFound) {
 		return nil, ErrOrderNotFound
 	}
-	return order, err
+	if err != nil {
+		return nil, err
+	}
+	u.cacheDel(ctx, orderID)
+	return order, nil
 }
 
 func (u *orderUsecase) CancelOrder(ctx context.Context, orderID int64) (*model.Order, error) {
@@ -103,6 +118,7 @@ func (u *orderUsecase) CancelOrder(ctx context.Context, orderID int64) (*model.O
 	// Publish order.cancelled — Delivery Service frees the driver
 	_ = u.publisher.Publish(ctx, "order.cancelled", cancelled)
 
+	u.cacheDel(ctx, orderID)
 	return cancelled, nil
 }
 
@@ -138,6 +154,7 @@ func (u *orderUsecase) ProcessPayment(ctx context.Context, orderID int64, method
 		_ = u.repo.UpdatePaymentStatus(ctx, orderID, model.PaymentFailed)
 		return nil, err
 	}
+	u.cacheDel(ctx, orderID)
 
 	// Step 3: mark payment success
 	if err := u.repo.UpdatePaymentStatus(ctx, orderID, model.PaymentSuccess); err != nil {

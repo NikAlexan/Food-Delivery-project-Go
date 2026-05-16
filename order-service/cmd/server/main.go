@@ -9,6 +9,7 @@ import (
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 
+	"food-delivery/order-service/internal/cache"
 	"food-delivery/order-service/internal/handler"
 	appnats "food-delivery/order-service/internal/nats"
 	"food-delivery/order-service/internal/repository"
@@ -20,6 +21,7 @@ func main() {
 	dsn := getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/orderdb?sslmode=disable")
 	natsURL := getEnv("NATS_URL", "nats://localhost:4222")
 	grpcAddr := getEnv("GRPC_ADDR", ":50053")
+	redisAddr := getEnv("REDIS_URL", "redis:6379")
 
 	// ── Database ──────────────────────────────────────────────────────────────
 	db, err := sql.Open("postgres", dsn)
@@ -38,9 +40,12 @@ func main() {
 	}
 	defer publisher.Close()
 
+	// ── Redis ─────────────────────────────────────────────────────────────────
+	orderCache := cache.NewOrderCache(redisAddr)
+
 	// ── Dependency injection (Clean Architecture) ─────────────────────────────
 	repo := repository.NewPostgresOrderRepo(db)
-	uc := usecase.NewOrderUsecase(repo, publisher)
+	uc := usecase.NewOrderUsecase(repo, publisher, orderCache)
 	h := handler.NewOrderHandler(uc)
 
 	// ── gRPC server ───────────────────────────────────────────────────────────

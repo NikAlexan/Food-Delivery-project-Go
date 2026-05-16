@@ -14,7 +14,7 @@ import (
 func TestProcessPayment_Success(t *testing.T) {
 	repo := &mockOrderRepo{}
 	pub := &mockPublisher{}
-	uc := NewOrderUsecase(repo, pub)
+	uc := NewOrderUsecase(repo, pub, nil)
 	ctx := context.Background()
 
 	existing := &model.Order{ID: 1, Status: model.StatusPending, Total: 3500}
@@ -36,7 +36,7 @@ func TestProcessPayment_Success(t *testing.T) {
 func TestProcessPayment_OrderNotFound(t *testing.T) {
 	repo := &mockOrderRepo{}
 	pub := &mockPublisher{}
-	uc := NewOrderUsecase(repo, pub)
+	uc := NewOrderUsecase(repo, pub, nil)
 	ctx := context.Background()
 
 	repo.On("GetByID", ctx, int64(99)).Return(nil, repository.ErrNotFound)
