@@ -8,6 +8,10 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
+const streamName = "USER_EVENTS"
+
+var streamSubjects = []string{"user.*"}
+
 type Publisher interface {
 	Publish(ctx context.Context, subject string, payload any) error
 	Close()
@@ -15,6 +19,7 @@ type Publisher interface {
 
 type publisher struct {
 	nc *nats.Conn
+	js nats.JetStreamContext
 }
 
 func NewPublisher(url string) (Publisher, error) {
@@ -22,7 +27,19 @@ func NewPublisher(url string) (Publisher, error) {
 	if err != nil {
 		return nil, fmt.Errorf("nats connect: %w", err)
 	}
-	return &publisher{nc: nc}, nil
+
+	js, err := nc.JetStream()
+	if err != nil {
+		nc.Close()
+		return nil, fmt.Errorf("nats jetstream: %w", err)
+	}
+
+	if err := ensureStream(js, streamName, streamSubjects); err != nil {
+		nc.Close()
+		return nil, fmt.Errorf("nats ensure stream: %w", err)
+	}
+
+	return &publisher{nc: nc, js: js}, nil
 }
 
 func (p *publisher) Publish(_ context.Context, subject string, payload any) error {
@@ -30,9 +47,23 @@ func (p *publisher) Publish(_ context.Context, subject string, payload any) erro
 	if err != nil {
 		return fmt.Errorf("marshal: %w", err)
 	}
-	return p.nc.Publish(subject, data)
+	_, err = p.js.Publish(subject, data)
+	return err
 }
 
 func (p *publisher) Close() {
+	p.nc.Drain()
 	p.nc.Close()
+}
+
+func ensureStream(js nats.JetStreamContext, name string, subjects []string) error {
+	if _, err := js.StreamInfo(name); err == nil {
+		return nil
+	}
+	_, err := js.AddStream(&nats.StreamConfig{
+		Name:     name,
+		Subjects: subjects,
+		Storage:  nats.FileStorage,
+	})
+	return err
 }
