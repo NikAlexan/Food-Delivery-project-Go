@@ -3,12 +3,13 @@ module food-delivery/api-gateway
 go 1.26.1
 
 require (
-	food-delivery/restaurant-service v0.0.0
 	food-delivery/delivery-service v0.0.0
-	food-delivery/user-service v0.0.0
 	food-delivery/order-service v0.0.0
+	food-delivery/restaurant-service v0.0.0
+	food-delivery/user-service v0.0.0
 	github.com/gin-gonic/gin v1.12.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
+	golang.org/x/time v0.12.0
 	google.golang.org/grpc v1.80.0
 )
 

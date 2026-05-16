@@ -10,6 +10,7 @@ import (
 func New(userProxy *proxy.UserProxy, deliveryProxy *proxy.DeliveryProxy, restaurantProxy *proxy.RestaurantProxy, orderProxy *proxy.OrderProxy, jwtSecret string) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
+	r.Use(middleware.RateLimit())
 	r.Use(middleware.RequestLogger())
 
 	// ── Users ─────────────────────────────────────────────────────────────────
