@@ -100,7 +100,9 @@ services:
       - "8025:8025"
 
   user-service:
-    image: golang:1.26-alpine
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
       postgres-user:
@@ -109,9 +111,6 @@ services:
         condition: service_healthy
       nats:
         condition: service_healthy
-    volumes:
-      - ./user-service:/app
-    working_dir: /app
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres-user:5432/userdb?sslmode=disable
       REDIS_ADDR: redis:6379
@@ -120,16 +119,16 @@ services:
       NATS_URL: nats://nats:4222
     ports:
       - "50051:50051"
-    command: |
-      sh -c "go run github.com/pressly/goose/v3/cmd/goose@latest -dir migrations postgres $$DATABASE_URL up && go run ./cmd/server"
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 50051 || exit 1"]
-      interval: 10s
-      timeout: 5s
+      interval: 5s
+      timeout: 3s
       retries: 10
 
   restaurant-service:
-    image: golang:1.26-alpine
+    build:
+      context: ./restaurant-service
+      dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
       postgres-restaurant:
@@ -138,9 +137,6 @@ services:
         condition: service_healthy
       nats:
         condition: service_healthy
-    volumes:
-      - ./restaurant-service:/app
-    working_dir: /app
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres-restaurant:5432/restaurantdb?sslmode=disable
       REDIS_ADDR: redis:6379
@@ -148,41 +144,38 @@ services:
       GRPC_ADDR: :50052
     ports:
       - "50052:50052"
-    command: |
-      sh -c "go run github.com/pressly/goose/v3/cmd/goose@latest -dir migrations postgres $$DATABASE_URL up && go run ./cmd/server"
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 50052 || exit 1"]
-      interval: 10s
-      timeout: 5s
+      interval: 5s
+      timeout: 3s
       retries: 10
 
   order-service:
-    image: golang:1.26-alpine
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
       postgres-order:
         condition: service_healthy
       nats:
         condition: service_healthy
-    volumes:
-      - ./order-service:/app
-    working_dir: /app
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres-order:5432/orderdb?sslmode=disable
       NATS_URL: nats://nats:4222
       GRPC_ADDR: :50053
     ports:
       - "50053:50053"
-    command: |
-      sh -c "go run github.com/pressly/goose/v3/cmd/goose@latest -dir migrations postgres $$DATABASE_URL up && go run ./cmd/server"
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 50053 || exit 1"]
-      interval: 10s
-      timeout: 5s
+      interval: 5s
+      timeout: 3s
       retries: 10
 
   delivery-service:
-    image: golang:1.26-alpine
+    build:
+      context: ./delivery-service
+      dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
       postgres-delivery:
@@ -193,9 +186,6 @@ services:
         condition: service_healthy
       mailhog:
         condition: service_started
-    volumes:
-      - ./delivery-service:/app
-    working_dir: /app
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres-delivery:5432/deliverydb?sslmode=disable
       REDIS_ADDR: redis:6379
@@ -208,16 +198,16 @@ services:
       EMAIL_FROM: ${EMAIL_FROM:-no-reply@example.com}
     ports:
       - "50054:50054"
-    command: |
-      sh -c "go run github.com/pressly/goose/v3/cmd/goose@latest -dir migrations postgres $$DATABASE_URL up && go run ./cmd/server"
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 50054 || exit 1"]
-      interval: 10s
-      timeout: 5s
+      interval: 5s
+      timeout: 3s
       retries: 10
 
   api-gateway:
-    image: golang:1.26-alpine
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
     restart: unless-stopped
     depends_on:
       user-service:
@@ -228,13 +218,6 @@ services:
         condition: service_healthy
       delivery-service:
         condition: service_healthy
-    volumes:
-      - ./api-gateway:/app/api-gateway
-      - ./delivery-service:/app/delivery-service
-      - ./user-service:/app/user-service
-      - ./restaurant-service:/app/restaurant-service
-      - ./order-service:/app/order-service
-    working_dir: /app/api-gateway
     environment:
       USER_SERVICE_ADDR: user-service:50051
       RESTAURANT_SERVICE_ADDR: restaurant-service:50052
@@ -244,7 +227,6 @@ services:
       HTTP_ADDR: :8080
     ports:
       - "8080:8080"
-    command: go run ./cmd
 
 volumes:
   postgres_user_data:
