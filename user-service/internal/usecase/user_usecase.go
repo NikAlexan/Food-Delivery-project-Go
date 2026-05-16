@@ -12,6 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"food-delivery/user-service/internal/model"
+	natspkg "food-delivery/user-service/internal/nats"
 	"food-delivery/user-service/internal/repository"
 )
 
@@ -34,10 +35,11 @@ type UserUsecase interface {
 type userUsecase struct {
 	repo      repository.UserRepository
 	jwtSecret []byte
+	publisher natspkg.Publisher
 }
 
-func NewUserUsecase(repo repository.UserRepository, jwtSecret string) UserUsecase {
-	return &userUsecase{repo: repo, jwtSecret: []byte(jwtSecret)}
+func NewUserUsecase(repo repository.UserRepository, jwtSecret string, publisher natspkg.Publisher) UserUsecase {
+	return &userUsecase{repo: repo, jwtSecret: []byte(jwtSecret), publisher: publisher}
 }
 
 func (u *userUsecase) Register(ctx context.Context, email, password, name, phone string, addr *model.Address) (*model.User, error) {
@@ -58,6 +60,15 @@ func (u *userUsecase) Register(ctx context.Context, email, password, name, phone
 	if err := u.repo.CreateUserWithAddress(ctx, user, addr); err != nil {
 		return nil, err
 	}
+
+	if u.publisher != nil {
+		_ = u.publisher.Publish(ctx, "user.registered", map[string]any{
+			"user_id": user.ID,
+			"email":   user.Email,
+			"name":    user.Name,
+		})
+	}
+
 	return user, nil
 }
 

@@ -107,6 +107,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      nats:
+        condition: service_healthy
     volumes:
       - ./user-service:/app
     working_dir: /app
@@ -115,6 +117,7 @@ services:
       REDIS_ADDR: redis:6379
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       GRPC_ADDR: :50051
+      NATS_URL: nats://nats:4222
     ports:
       - "50051:50051"
     command: |

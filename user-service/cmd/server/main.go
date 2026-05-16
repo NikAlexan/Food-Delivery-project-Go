@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 
 	"food-delivery/user-service/internal/handler"
+	natspkg "food-delivery/user-service/internal/nats"
 	"food-delivery/user-service/internal/repository"
 	"food-delivery/user-service/internal/usecase"
 	pb "food-delivery/user-service/proto/pb"
@@ -19,6 +20,7 @@ func main() {
 	dsn := getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/userdb?sslmode=disable")
 	jwtSecret := getEnv("JWT_SECRET", "change-me-in-production")
 	grpcAddr := getEnv("GRPC_ADDR", ":50051")
+	natsURL := getEnv("NATS_URL", "nats://localhost:4222")
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -29,8 +31,16 @@ func main() {
 	}
 	defer db.Close()
 
+	var natsPublisher natspkg.Publisher
+	if p, err := natspkg.NewPublisher(natsURL); err != nil {
+		log.Printf("warn: nats unavailable, registration events disabled: %v", err)
+	} else {
+		natsPublisher = p
+		defer natsPublisher.Close()
+	}
+
 	repo := repository.NewPostgresUserRepo(db)
-	uc := usecase.NewUserUsecase(repo, jwtSecret)
+	uc := usecase.NewUserUsecase(repo, jwtSecret, natsPublisher)
 	h := handler.NewUserHandler(uc)
 
 	lis, err := net.Listen("tcp", grpcAddr)
