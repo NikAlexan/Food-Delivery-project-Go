@@ -1,0 +1,123 @@
+syntax = "proto3";
+
+package restaurant;
+
+option go_package = "food-delivery/restaurant-service/proto/pb";
+
+service RestaurantService {
+  rpc CreateRestaurant(CreateRestaurantRequest) returns (RestaurantResponse);
+  rpc GetRestaurant(RestaurantIdRequest)        returns (RestaurantResponse);
+  rpc ListRestaurants(ListRestaurantsRequest)   returns (RestaurantList);
+  rpc SearchRestaurants(SearchRequest)          returns (RestaurantList);
+  rpc UpdateRestaurant(UpdateRestaurantRequest) returns (RestaurantResponse);
+  rpc DeleteRestaurant(RestaurantIdRequest)     returns (Empty);
+
+  rpc CreateMenuItem(CreateMenuItemRequest) returns (MenuItemResponse);
+  rpc UpdateMenuItem(UpdateMenuItemRequest) returns (MenuItemResponse);
+  rpc DeleteMenuItem(MenuItemIdRequest)     returns (Empty);
+  rpc GetMenu(RestaurantIdRequest)          returns (MenuList);
+}
+
+// ── Scalars ──────────────────────────────────────────────────────────────────
+
+message Empty {}
+
+message RestaurantIdRequest {
+  int64 restaurant_id = 1;
+}
+
+message MenuItemIdRequest {
+  int64 item_id = 1;
+}
+
+// ── Restaurant messages ───────────────────────────────────────────────────────
+
+message CreateRestaurantRequest {
+  string name        = 1;
+  string description = 2;
+  int64  category_id = 3;
+  string address     = 4;
+  string phone       = 5;
+  string image_url   = 6;
+}
+
+message UpdateRestaurantRequest {
+  int64  restaurant_id = 1;
+  string name          = 2;
+  string description   = 3;
+  string address       = 4;
+  string phone         = 5;
+  string image_url     = 6;
+  bool   is_active     = 7;
+}
+
+message ListRestaurantsRequest {
+  int64 category_id = 1; // 0 = all categories
+  int32 page        = 2;
+  int32 page_size   = 3;
+}
+
+message SearchRequest {
+  string query     = 1;
+  int32  page      = 2;
+  int32  page_size = 3;
+}
+
+message RestaurantResponse {
+  int64  restaurant_id = 1;
+  string name          = 2;
+  string description   = 3;
+  int64  category_id   = 4;
+  string category_name = 5;
+  string address       = 6;
+  string phone         = 7;
+  string image_url     = 8;
+  bool   is_active     = 9;
+  double rating        = 10;
+  string created_at    = 11;
+  string updated_at    = 12;
+}
+
+message RestaurantList {
+  repeated RestaurantResponse restaurants = 1;
+  int32                       total       = 2;
+}
+
+// ── Menu messages ─────────────────────────────────────────────────────────────
+
+message CreateMenuItemRequest {
+  int64  restaurant_id = 1;
+  string name          = 2;
+  string description   = 3;
+  double price         = 4;
+  string category      = 5;
+  string image_url     = 6;
+}
+
+message UpdateMenuItemRequest {
+  int64  item_id       = 1;
+  int64  restaurant_id = 2;
+  string name          = 3;
+  string description   = 4;
+  double price         = 5;
+  string category      = 6;
+  string image_url     = 7;
+  bool   is_available  = 8;
+}
+
+message MenuItemResponse {
+  int64  item_id        = 1;
+  int64  restaurant_id  = 2;
+  string name           = 3;
+  string description    = 4;
+  double price          = 5;
+  string category       = 6;
+  string image_url      = 7;
+  bool   is_available   = 8;
+  string created_at     = 9;
+  string updated_at     = 10;
+}
+
+message MenuList {
+  repeated MenuItemResponse items = 1;
+}
