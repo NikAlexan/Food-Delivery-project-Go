@@ -22,7 +22,7 @@ func mockRefreshToken(userID int64) interface{} {
 
 func TestRefreshToken_Success(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	// First: login to get a real refresh token
@@ -54,7 +54,7 @@ func TestRefreshToken_Success(t *testing.T) {
 
 func TestRefreshToken_InvalidToken(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	repo.On("GetRefreshToken", ctx, hashToken("bad-token")).Return(nil, repository.ErrNotFound)
@@ -66,7 +66,7 @@ func TestRefreshToken_InvalidToken(t *testing.T) {
 
 func TestRefreshToken_Expired(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	expired := &model.RefreshToken{

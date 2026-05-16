@@ -1,7 +1,7 @@
 COMPOSE = docker compose
-GO      = docker run --rm -v $(PWD)/user-service:/app -w /app golang:1.26-alpine go
-GO_RS   = docker run --rm -v $(PWD)/restaurant-service:/app -w /app golang:1.26-alpine go
-GO_DELIVERY = docker run --rm -v $(PWD)/delivery-service:/app -w /app golang:1.26-alpine go
+GO      = docker run --rm -v "$(PWD)/user-service:/app" -w /app golang:1.26-alpine go
+GO_RS   = docker run --rm -v "$(PWD)/restaurant-service:/app" -w /app golang:1.26-alpine go
+GO_DELIVERY = docker run --rm -v "$(PWD)/delivery-service:/app" -w /app golang:1.26-alpine go
 
 .PHONY: up down restart logs \
         proto proto-user proto-delivery proto-restaurant build-user build-delivery build-gateway build-restaurant \

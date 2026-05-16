@@ -18,7 +18,7 @@ func newHashedUser(id int64, email, password string) *model.User {
 
 func TestLogin_Success(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	user := newHashedUser(1, "user@example.com", "correct")
@@ -35,7 +35,7 @@ func TestLogin_Success(t *testing.T) {
 
 func TestLogin_WrongPassword(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	user := newHashedUser(1, "user@example.com", "correct")
@@ -48,7 +48,7 @@ func TestLogin_WrongPassword(t *testing.T) {
 
 func TestLogin_UserNotFound(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	repo.On("GetByEmail", ctx, "ghost@example.com").Return(nil, repository.ErrNotFound)
