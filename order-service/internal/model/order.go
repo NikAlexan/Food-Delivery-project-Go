@@ -21,14 +21,16 @@ type OrderItem struct {
 }
 
 type Order struct {
-	ID           int64       `db:"id"`
-	UserID       int64       `db:"user_id"`
-	RestaurantID int64       `db:"restaurant_id"`
-	Items        []OrderItem `db:"-"`
-	Status       OrderStatus `db:"status"`
-	Total        float64     `db:"total"`
-	CreatedAt    time.Time   `db:"created_at"`
-	UpdatedAt    time.Time   `db:"updated_at"`
+	ID              int64       `db:"id"`
+	UserID          int64       `db:"user_id"`
+	RestaurantID    int64       `db:"restaurant_id"`
+	Items           []OrderItem `db:"-"`
+	Status          OrderStatus `db:"status"`
+	Total           float64     `db:"total"`
+	DeliveryAddress string      `db:"delivery_address" json:"delivery_address"`
+	UserEmail       string      `db:"user_email"       json:"user_email"`
+	CreatedAt       time.Time   `db:"created_at"`
+	UpdatedAt       time.Time   `db:"updated_at"`
 }
 
 type PaymentStatus string

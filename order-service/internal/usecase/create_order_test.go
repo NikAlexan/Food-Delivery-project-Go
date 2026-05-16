@@ -24,7 +24,7 @@ func TestCreateOrder_Success(t *testing.T) {
 	repo.On("CreateOrderWithItems", ctx, mock.AnythingOfType("*model.Order")).Return(nil)
 	pub.On("Publish", ctx, "order.created", mock.Anything).Return(nil)
 
-	order, err := uc.CreateOrder(ctx, 1, 10, items)
+	order, err := uc.CreateOrder(ctx, 1, 10, items, "123 Main St", "test@example.com")
 
 	assert.NoError(t, err)
 	assert.Equal(t, model.StatusPending, order.Status)
@@ -38,7 +38,7 @@ func TestCreateOrder_EmptyItems(t *testing.T) {
 	uc := NewOrderUsecase(repo, pub, nil)
 	ctx := context.Background()
 
-	_, err := uc.CreateOrder(ctx, 1, 10, nil)
+	_, err := uc.CreateOrder(ctx, 1, 10, nil, "", "")
 
 	assert.ErrorIs(t, err, ErrEmptyItems)
 }

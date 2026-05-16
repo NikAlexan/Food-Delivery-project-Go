@@ -47,6 +47,8 @@ async function place() {
           quantity: i.quantity,
           price: i.price,
         })),
+        delivery_address: selectedAddress.value,
+        user_email: auth.email ?? '',
       }),
     })
 

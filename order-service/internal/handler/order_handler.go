@@ -35,9 +35,12 @@ func (h *OrderHandler) CreateOrder(ctx context.Context, req *pb.CreateOrderReque
 	if len(req.Items) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "items cannot be empty")
 	}
+	if req.DeliveryAddress == "" {
+		return nil, status.Error(codes.InvalidArgument, "delivery_address is required")
+	}
 
 	items := protoItemsToModel(req.Items)
-	order, err := h.uc.CreateOrder(ctx, req.UserId, req.RestaurantId, items)
+	order, err := h.uc.CreateOrder(ctx, req.UserId, req.RestaurantId, items, req.DeliveryAddress, req.UserEmail)
 	if errors.Is(err, usecase.ErrEmptyItems) {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}

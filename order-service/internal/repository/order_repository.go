@@ -39,10 +39,10 @@ func (r *postgresOrderRepo) CreateOrderWithItems(ctx context.Context, order *mod
 	defer tx.Rollback()
 
 	err = tx.QueryRowContext(ctx,
-		`INSERT INTO orders (user_id, restaurant_id, status, total)
-		 VALUES ($1, $2, $3, $4)
+		`INSERT INTO orders (user_id, restaurant_id, status, total, delivery_address, user_email)
+		 VALUES ($1, $2, $3, $4, $5, $6)
 		 RETURNING id, created_at, updated_at`,
-		order.UserID, order.RestaurantID, order.Status, order.Total,
+		order.UserID, order.RestaurantID, order.Status, order.Total, order.DeliveryAddress, order.UserEmail,
 	).Scan(&order.ID, &order.CreatedAt, &order.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("insert order: %w", err)
