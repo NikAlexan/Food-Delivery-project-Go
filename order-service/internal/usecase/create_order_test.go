@@ -14,7 +14,7 @@ import (
 func TestCreateOrder_Success(t *testing.T) {
 	repo := &mockOrderRepo{}
 	pub := &mockPublisher{}
-	uc := NewOrderUsecase(repo, pub)
+	uc := NewOrderUsecase(repo, pub, nil)
 	ctx := context.Background()
 
 	items := []model.OrderItem{
@@ -35,7 +35,7 @@ func TestCreateOrder_Success(t *testing.T) {
 func TestCreateOrder_EmptyItems(t *testing.T) {
 	repo := &mockOrderRepo{}
 	pub := &mockPublisher{}
-	uc := NewOrderUsecase(repo, pub)
+	uc := NewOrderUsecase(repo, pub, nil)
 	ctx := context.Background()
 
 	_, err := uc.CreateOrder(ctx, 1, 10, nil)
@@ -46,7 +46,7 @@ func TestCreateOrder_EmptyItems(t *testing.T) {
 func TestCancelOrder_Success(t *testing.T) {
 	repo := &mockOrderRepo{}
 	pub := &mockPublisher{}
-	uc := NewOrderUsecase(repo, pub)
+	uc := NewOrderUsecase(repo, pub, nil)
 	ctx := context.Background()
 
 	existing := &model.Order{ID: 1, Status: model.StatusPending}
@@ -66,7 +66,7 @@ func TestCancelOrder_Success(t *testing.T) {
 func TestCancelOrder_NotFound(t *testing.T) {
 	repo := &mockOrderRepo{}
 	pub := &mockPublisher{}
-	uc := NewOrderUsecase(repo, pub)
+	uc := NewOrderUsecase(repo, pub, nil)
 	ctx := context.Background()
 
 	repo.On("GetByID", ctx, int64(99)).Return(nil, repository.ErrNotFound)
@@ -79,7 +79,7 @@ func TestCancelOrder_NotFound(t *testing.T) {
 func TestCancelOrder_AlreadyCancelled(t *testing.T) {
 	repo := &mockOrderRepo{}
 	pub := &mockPublisher{}
-	uc := NewOrderUsecase(repo, pub)
+	uc := NewOrderUsecase(repo, pub, nil)
 	ctx := context.Background()
 
 	existing := &model.Order{ID: 1, Status: model.StatusCancelled}
@@ -93,7 +93,7 @@ func TestCancelOrder_AlreadyCancelled(t *testing.T) {
 func TestCalculateTotal(t *testing.T) {
 	repo := &mockOrderRepo{}
 	pub := &mockPublisher{}
-	uc := NewOrderUsecase(repo, pub)
+	uc := NewOrderUsecase(repo, pub, nil)
 	ctx := context.Background()
 
 	items := []model.OrderItem{

@@ -11,6 +11,26 @@ import (
 	pb "food-delivery/order-service/proto/pb"
 )
 
+type orderItemInput struct {
+	MenuItemID int64   `json:"menu_item_id"`
+	Name       string  `json:"name"`
+	Quantity   int32   `json:"quantity"`
+	Price      float64 `json:"price"`
+}
+
+func toProtoItems(in []orderItemInput) []*pb.OrderItem {
+	out := make([]*pb.OrderItem, len(in))
+	for i, it := range in {
+		out[i] = &pb.OrderItem{
+			MenuItemId: it.MenuItemID,
+			Name:       it.Name,
+			Quantity:   it.Quantity,
+			Price:      it.Price,
+		}
+	}
+	return out
+}
+
 type OrderProxy struct {
 	conn   *grpc.ClientConn
 	client pb.OrderServiceClient
@@ -30,14 +50,21 @@ func (p *OrderProxy) Close() error {
 
 func (p *OrderProxy) CreateOrder(c *gin.Context) {
 	userID := c.GetInt64("user_id")
-	var req pb.CreateOrderRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+
+	var body struct {
+		RestaurantID int64            `json:"restaurant_id"`
+		Items        []orderItemInput `json:"items"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	req.UserId = userID
 
-	resp, err := p.client.CreateOrder(c.Request.Context(), &req)
+	resp, err := p.client.CreateOrder(c.Request.Context(), &pb.CreateOrderRequest{
+		UserId:       userID,
+		RestaurantId: body.RestaurantID,
+		Items:        toProtoItems(body.Items),
+	})
 	if err != nil {
 		respondGRPCError(c, err)
 		return
@@ -116,14 +143,20 @@ func (p *OrderProxy) ProcessPayment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid order id"})
 		return
 	}
-	var req pb.PaymentRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	var body struct {
+		Method string  `json:"method"`
+		Amount float64 `json:"amount"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	req.OrderId = id
 
-	resp, err := p.client.ProcessPayment(c.Request.Context(), &req)
+	resp, err := p.client.ProcessPayment(c.Request.Context(), &pb.PaymentRequest{
+		OrderId: id,
+		Method:  body.Method,
+		Amount:  body.Amount,
+	})
 	if err != nil {
 		respondGRPCError(c, err)
 		return
@@ -142,13 +175,15 @@ func (p *OrderProxy) GetOrderHistory(c *gin.Context) {
 }
 
 func (p *OrderProxy) CalculateTotal(c *gin.Context) {
-	var req pb.CartRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	var body struct {
+		Items []orderItemInput `json:"items"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	resp, err := p.client.CalculateTotal(c.Request.Context(), &req)
+	resp, err := p.client.CalculateTotal(c.Request.Context(), &pb.CartRequest{Items: toProtoItems(body.Items)})
 	if err != nil {
 		respondGRPCError(c, err)
 		return
