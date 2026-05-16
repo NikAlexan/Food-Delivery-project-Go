@@ -13,7 +13,7 @@ import (
 
 func TestRegister_Success(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	repo.On("GetByEmail", ctx, "test@example.com").Return(nil, repository.ErrNotFound)
@@ -31,7 +31,7 @@ func TestRegister_Success(t *testing.T) {
 
 func TestRegister_EmailTaken(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	existing := &model.User{ID: 1, Email: "test@example.com"}
@@ -45,7 +45,7 @@ func TestRegister_EmailTaken(t *testing.T) {
 
 func TestRegister_NoAddress(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	repo.On("GetByEmail", ctx, "noaddr@example.com").Return(nil, repository.ErrNotFound)

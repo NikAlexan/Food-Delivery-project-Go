@@ -13,7 +13,7 @@ import (
 
 func TestGetProfile_Success(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	expected := &model.User{ID: 1, Email: "u@example.com", Name: "Nikita"}
@@ -27,7 +27,7 @@ func TestGetProfile_Success(t *testing.T) {
 
 func TestGetProfile_NotFound(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	repo.On("GetByID", ctx, int64(99)).Return(nil, repository.ErrNotFound)
@@ -39,7 +39,7 @@ func TestGetProfile_NotFound(t *testing.T) {
 
 func TestUpdateProfile_Success(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	existing := &model.User{ID: 1, Email: "u@example.com", Name: "Old", Phone: "0"}
@@ -55,7 +55,7 @@ func TestUpdateProfile_Success(t *testing.T) {
 
 func TestDeleteUser_Success(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	repo.On("DeleteUser", ctx, int64(1)).Return(nil)
@@ -67,7 +67,7 @@ func TestDeleteUser_Success(t *testing.T) {
 
 func TestGetAddresses_Success(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	addrs := []model.Address{
@@ -84,7 +84,7 @@ func TestGetAddresses_Success(t *testing.T) {
 
 func TestAddAddress_Success(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUserUsecase(repo, "secret")
+	uc := NewUserUsecase(repo, "secret", nil, nil)
 	ctx := context.Background()
 
 	addr := &model.Address{UserID: 1, Street: "Abay 1", City: "Almaty", Zip: "050000", IsDefault: true}

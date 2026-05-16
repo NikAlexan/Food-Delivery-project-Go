@@ -11,6 +11,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 
+	"food-delivery/user-service/internal/cache"
 	"food-delivery/user-service/internal/model"
 	natspkg "food-delivery/user-service/internal/nats"
 	"food-delivery/user-service/internal/repository"
@@ -36,10 +37,11 @@ type userUsecase struct {
 	repo      repository.UserRepository
 	jwtSecret []byte
 	publisher natspkg.Publisher
+	cache     *cache.UserCache
 }
 
-func NewUserUsecase(repo repository.UserRepository, jwtSecret string, publisher natspkg.Publisher) UserUsecase {
-	return &userUsecase{repo: repo, jwtSecret: []byte(jwtSecret), publisher: publisher}
+func NewUserUsecase(repo repository.UserRepository, jwtSecret string, publisher natspkg.Publisher, userCache *cache.UserCache) UserUsecase {
+	return &userUsecase{repo: repo, jwtSecret: []byte(jwtSecret), publisher: publisher, cache: userCache}
 }
 
 func (u *userUsecase) Register(ctx context.Context, email, password, name, phone string, addr *model.Address) (*model.User, error) {
@@ -99,7 +101,19 @@ func (u *userUsecase) Login(ctx context.Context, email, password string) (string
 }
 
 func (u *userUsecase) GetProfile(ctx context.Context, userID int64) (*model.User, error) {
-	return u.repo.GetByID(ctx, userID)
+	if u.cache != nil {
+		if cached, err := u.cache.GetProfile(ctx, userID); err == nil && cached != nil {
+			return cached, nil
+		}
+	}
+	user, err := u.repo.GetByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if u.cache != nil {
+		u.cache.SetProfile(ctx, user)
+	}
+	return user, nil
 }
 
 func (u *userUsecase) UpdateProfile(ctx context.Context, userID int64, name, phone string) (*model.User, error) {
@@ -111,6 +125,9 @@ func (u *userUsecase) UpdateProfile(ctx context.Context, userID int64, name, pho
 	user.Phone = phone
 	if err := u.repo.UpdateProfile(ctx, user); err != nil {
 		return nil, err
+	}
+	if u.cache != nil {
+		u.cache.DeleteProfile(ctx, userID)
 	}
 	return user, nil
 }
@@ -155,7 +172,13 @@ func (u *userUsecase) RefreshToken(ctx context.Context, refreshToken string) (st
 }
 
 func (u *userUsecase) DeleteUser(ctx context.Context, userID int64) error {
-	return u.repo.DeleteUser(ctx, userID)
+	if err := u.repo.DeleteUser(ctx, userID); err != nil {
+		return err
+	}
+	if u.cache != nil {
+		u.cache.DeleteProfile(ctx, userID)
+	}
+	return nil
 }
 
 func (u *userUsecase) generateAccessToken(userID int64) (string, error) {

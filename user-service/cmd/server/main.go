@@ -9,6 +9,7 @@ import (
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 
+	"food-delivery/user-service/internal/cache"
 	"food-delivery/user-service/internal/handler"
 	natspkg "food-delivery/user-service/internal/nats"
 	"food-delivery/user-service/internal/repository"
@@ -21,6 +22,7 @@ func main() {
 	jwtSecret := getEnv("JWT_SECRET", "change-me-in-production")
 	grpcAddr := getEnv("GRPC_ADDR", ":50051")
 	natsURL := getEnv("NATS_URL", "nats://localhost:4222")
+	redisAddr := getEnv("REDIS_URL", "redis:6379")
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -39,8 +41,10 @@ func main() {
 		defer natsPublisher.Close()
 	}
 
+	userCache := cache.NewUserCache(redisAddr)
+
 	repo := repository.NewPostgresUserRepo(db)
-	uc := usecase.NewUserUsecase(repo, jwtSecret, natsPublisher)
+	uc := usecase.NewUserUsecase(repo, jwtSecret, natsPublisher, userCache)
 	h := handler.NewUserHandler(uc)
 
 	lis, err := net.Listen("tcp", grpcAddr)
