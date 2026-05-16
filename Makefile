@@ -7,7 +7,8 @@ GO_DELIVERY = docker run --rm -v $(PWD)/delivery-service:/app -w /app golang:1.2
         proto proto-user proto-delivery proto-restaurant build-user build-delivery build-gateway build-restaurant \
         migrate-up migrate-down migrate-status \
         migrate-restaurant-up migrate-restaurant-down migrate-restaurant-status \
-        test-user test-delivery test-restaurant lint-user lint-delivery lint-restaurant tidy
+        test-user test-user-integration test-delivery test-restaurant test-gateway \
+        lint-user lint-delivery lint-restaurant tidy
 
 # ── Compose ──────────────────────────────────────────────────────────────────
 
@@ -141,13 +142,30 @@ tidy:
 		go mod tidy
 
 test-user:
-	$(GO) test ./... -v -count=1
+	$(GO) test ./internal/usecase/... -v -count=1
+
+test-user-integration:
+	docker run --rm \
+		-v "$(PWD)/user-service:/app" \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-w /app golang:1.26-alpine \
+		go test ./internal/repository/... -v -count=1 -timeout 120s
 
 test-restaurant:
 	$(GO_RS) test ./... -v -count=1
 
 test-delivery:
 	$(GO_DELIVERY) test ./... -v -count=1
+
+test-gateway:
+	docker run --rm \
+		-v "$(PWD)/api-gateway:/app/api-gateway" \
+		-v "$(PWD)/delivery-service:/app/delivery-service" \
+		-v "$(PWD)/user-service:/app/user-service" \
+		-v "$(PWD)/restaurant-service:/app/restaurant-service" \
+		-v "$(PWD)/order-service:/app/order-service" \
+		-w /app/api-gateway golang:1.26-alpine \
+		go test ./... -v -count=1
 
 lint-user:
 	docker run --rm -v $(PWD)/user-service:/app -w /app \
