@@ -13,6 +13,8 @@ func New(userProxy *proxy.UserProxy, deliveryProxy *proxy.DeliveryProxy, restaur
 	r.Use(middleware.RateLimit())
 	r.Use(middleware.RequestLogger())
 
+	r.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"status": "ok"}) })
+
 	// ── Users ─────────────────────────────────────────────────────────────────
 	users := r.Group("/api/users")
 	{
