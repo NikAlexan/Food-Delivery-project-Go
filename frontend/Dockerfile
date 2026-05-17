@@ -3,6 +3,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+ARG API_GATEWAY_URL=http://api-gateway
+ENV API_GATEWAY_URL=$API_GATEWAY_URL
 RUN npm run build
 
 FROM node:24-alpine
