@@ -60,8 +60,9 @@ func (c *Client) StartOrderConsumers(handler OrderHandler) error {
 	}
 
 	for _, sub := range subscriptions {
-		if _, err := c.js.Subscribe(
+		if _, err := c.js.QueueSubscribe(
 			sub.subject,
+			"delivery-workers",
 			c.wrapHandler(sub.subject, sub.handle),
 			natsgo.Durable(sub.durable),
 			natsgo.ManualAck(),
