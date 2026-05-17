@@ -3,11 +3,14 @@ package nats
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 
 	natsgo "github.com/nats-io/nats.go"
 
 	"food-delivery/delivery-service/internal/model"
+	"food-delivery/delivery-service/internal/repository"
+	"food-delivery/delivery-service/internal/usecase"
 )
 
 type OrderHandler interface {
@@ -54,9 +57,9 @@ func (c *Client) StartOrderConsumers(handler OrderHandler) error {
 		durable string
 		handle  func(context.Context, model.OrderEvent) error
 	}{
-		{subject: "order.created", durable: "delivery-order-created", handle: handler.HandleOrderCreated},
-		{subject: "order.paid", durable: "delivery-order-paid", handle: handler.HandleOrderPaid},
-		{subject: "order.cancelled", durable: "delivery-order-cancelled", handle: handler.HandleOrderCancelled},
+		{subject: "order.created", durable: "delivery-order-created-q", handle: handler.HandleOrderCreated},
+		{subject: "order.paid", durable: "delivery-order-paid-q", handle: handler.HandleOrderPaid},
+		{subject: "order.cancelled", durable: "delivery-order-cancelled-q", handle: handler.HandleOrderCancelled},
 	}
 
 	for _, sub := range subscriptions {
@@ -122,7 +125,12 @@ func (c *Client) wrapHandler(subject string, handle func(context.Context, model.
 
 		if err := handle(context.Background(), event); err != nil {
 			log.Printf("nats %s handler failed: %v", subject, err)
-			_ = msg.Nak()
+			// Term = don't redeliver; Nak = retry. Use Term for permanent errors.
+			if errors.Is(err, usecase.ErrInvalidDelivery) || errors.Is(err, repository.ErrNotFound) {
+				_ = msg.Term()
+			} else {
+				_ = msg.Nak()
+			}
 			return
 		}
 
