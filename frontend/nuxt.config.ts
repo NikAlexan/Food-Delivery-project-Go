@@ -7,14 +7,14 @@ export default defineNuxtConfig({
   ],
 
   routeRules: {
-    '/api/**': { proxy: 'http://localhost:8080/api/**' },
+    '/api/**': { proxy: `${process.env.API_GATEWAY_URL || 'http://localhost:8080'}/api/**` },
   },
 
   vite: {
     server: {
       proxy: {
         '/api': {
-          target: 'http://localhost:8080',
+          target: process.env.API_GATEWAY_URL || 'http://localhost:8080',
           changeOrigin: true,
         },
       },

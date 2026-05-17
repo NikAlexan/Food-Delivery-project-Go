@@ -35,6 +35,9 @@ jobs:
           - service: delivery-service
             context: ./delivery-service
             dockerfile: delivery-service/Dockerfile
+          - service: frontend
+            context: ./frontend
+            dockerfile: frontend/Dockerfile
 
     steps:
       - name: Checkout
