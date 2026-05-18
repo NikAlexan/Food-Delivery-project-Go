@@ -25,7 +25,7 @@ function logout() {
       </NuxtLink>
 
       <nav class="flex items-center gap-4 text-sm font-medium text-gray-600">
-        <NuxtLink to="/restaurants" class="hover:text-brand-600 transition-colors">Рестораны</NuxtLink>
+        <NuxtLink v-if="!auth.isLoggedIn || auth.role === 'customer'" to="/restaurants" class="hover:text-brand-600 transition-colors">Рестораны</NuxtLink>
 
         <template v-if="auth.isLoggedIn">
           <template v-if="auth.role === 'driver'">
