@@ -114,13 +114,6 @@ func (r *postgresDeliveryRepo) AssignDriver(ctx context.Context, orderID, userID
 		return nil, false, err
 	}
 
-	if _, err := tx.ExecContext(ctx,
-		`UPDATE drivers SET is_available = FALSE, updated_at = NOW() WHERE id = $1`,
-		driver.ID,
-	); err != nil {
-		return nil, false, err
-	}
-
 	if err := tx.Commit(); err != nil {
 		return nil, false, err
 	}
@@ -269,13 +262,6 @@ func (r *postgresDeliveryRepo) finishDelivery(ctx context.Context, key string, i
 		return existing, false, nil
 	}
 	if err != nil {
-		return nil, false, err
-	}
-
-	if _, err := tx.ExecContext(ctx,
-		`UPDATE drivers SET is_available = TRUE, updated_at = NOW() WHERE id = $1`,
-		driverID,
-	); err != nil {
 		return nil, false, err
 	}
 
