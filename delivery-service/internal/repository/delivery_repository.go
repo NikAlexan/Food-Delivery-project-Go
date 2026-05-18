@@ -78,12 +78,14 @@ func (r *postgresDeliveryRepo) AssignDriver(ctx context.Context, orderID, userID
 
 	driver := &model.Driver{}
 	err = tx.QueryRowContext(ctx, `
-		SELECT id, name, email, phone, current_latitude, current_longitude
-		FROM drivers
-		WHERE is_available = TRUE
-		ORDER BY id
+		SELECT d.id, d.name, d.email, d.phone, d.current_latitude, d.current_longitude
+		FROM drivers d
+		LEFT JOIN deliveries del ON del.driver_id = d.id AND del.status IN ('assigned', 'in_transit')
+		WHERE d.is_available = TRUE
+		GROUP BY d.id
+		ORDER BY COUNT(del.id) ASC, d.id ASC
 		LIMIT 1
-		FOR UPDATE SKIP LOCKED`,
+		FOR UPDATE OF d SKIP LOCKED`,
 	).Scan(
 		&driver.ID,
 		&driver.Name,
