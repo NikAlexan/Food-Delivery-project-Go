@@ -30,6 +30,7 @@ type Delivery struct {
 
 type Driver struct {
 	ID               int64     `db:"id"`
+	UserID           *int64    `db:"user_id"`
 	Name             string    `db:"name"`
 	Email            string    `db:"email"`
 	Phone            string    `db:"phone"`

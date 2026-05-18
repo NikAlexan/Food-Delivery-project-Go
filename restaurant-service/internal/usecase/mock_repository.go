@@ -34,8 +34,16 @@ func (m *MockRepository) UpdateRestaurant(ctx context.Context, r *model.Restaura
 	return args.Error(0)
 }
 
-func (m *MockRepository) DeleteRestaurant(ctx context.Context, id int64) error {
-	args := m.Called(ctx, id)
+func (m *MockRepository) GetByOwnerID(ctx context.Context, ownerID int64) (*model.Restaurant, error) {
+	args := m.Called(ctx, ownerID)
+	if v := args.Get(0); v != nil {
+		return v.(*model.Restaurant), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func (m *MockRepository) DeleteRestaurant(ctx context.Context, id, ownerID int64) error {
+	args := m.Called(ctx, id, ownerID)
 	return args.Error(0)
 }
 

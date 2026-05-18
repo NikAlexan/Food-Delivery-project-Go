@@ -4,13 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 
 	"food-delivery/delivery-service/internal/model"
 )
 
 var (
-	ErrNotFound          = errors.New("not found")
-	ErrNoAvailableDriver = errors.New("no available driver")
+	ErrNotFound           = errors.New("not found")
+	ErrNoAvailableDriver  = errors.New("no available driver")
+	ErrAlreadyRegistered  = errors.New("already registered as driver")
 )
 
 type DeliveryRepository interface {
@@ -24,6 +26,8 @@ type DeliveryRepository interface {
 	CancelByOrderID(ctx context.Context, orderID int64) (*model.Delivery, bool, error)
 	ListDriverDeliveries(ctx context.Context, driverID int64) ([]model.Delivery, error)
 	GetDeliveryHistory(ctx context.Context, userID int64) ([]model.Delivery, error)
+	CreateDriver(ctx context.Context, d *model.Driver) (*model.Driver, error)
+	GetDriverByUserID(ctx context.Context, userID int64) (*model.Driver, error)
 }
 
 type postgresDeliveryRepo struct {
@@ -281,6 +285,37 @@ func (r *postgresDeliveryRepo) finishDelivery(ctx context.Context, key string, i
 
 	delivery, err := r.GetByID(ctx, deliveryID)
 	return delivery, true, err
+}
+
+func (r *postgresDeliveryRepo) CreateDriver(ctx context.Context, d *model.Driver) (*model.Driver, error) {
+	err := r.db.QueryRowContext(ctx,
+		`INSERT INTO drivers (user_id, name, email, phone)
+		 VALUES ($1, $2, $3, $4)
+		 RETURNING id, is_available, current_latitude, current_longitude, created_at, updated_at`,
+		d.UserID, d.Name, d.Email, d.Phone,
+	).Scan(&d.ID, &d.IsAvailable, &d.CurrentLatitude, &d.CurrentLongitude, &d.CreatedAt, &d.UpdatedAt)
+	if err != nil {
+		if strings.Contains(err.Error(), "unique") {
+			return nil, ErrAlreadyRegistered
+		}
+		return nil, err
+	}
+	return d, nil
+}
+
+func (r *postgresDeliveryRepo) GetDriverByUserID(ctx context.Context, userID int64) (*model.Driver, error) {
+	d := &model.Driver{}
+	err := r.db.QueryRowContext(ctx,
+		`SELECT id, user_id, name, email, phone, is_available,
+		        current_latitude, current_longitude, created_at, updated_at
+		 FROM drivers WHERE user_id = $1`,
+		userID,
+	).Scan(&d.ID, &d.UserID, &d.Name, &d.Email, &d.Phone, &d.IsAvailable,
+		&d.CurrentLatitude, &d.CurrentLongitude, &d.CreatedAt, &d.UpdatedAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	return d, err
 }
 
 func (r *postgresDeliveryRepo) getByOrderIDTx(ctx context.Context, tx *sql.Tx, orderID int64) (*model.Delivery, error) {

@@ -14,6 +14,7 @@ import (
 var (
 	ErrInvalidDelivery    = errors.New("invalid delivery request")
 	ErrInvalidCoordinates = errors.New("invalid driver coordinates")
+	ErrAlreadyRegistered  = repository.ErrAlreadyRegistered
 )
 
 type EventPublisher interface {
@@ -37,6 +38,8 @@ type DeliveryUsecase interface {
 	HandleOrderCreated(ctx context.Context, event model.OrderEvent) error
 	HandleOrderPaid(ctx context.Context, event model.OrderEvent) error
 	HandleOrderCancelled(ctx context.Context, event model.OrderEvent) error
+	RegisterDriver(ctx context.Context, userID int64, name, email, phone string) (*model.Driver, error)
+	GetMyDriver(ctx context.Context, userID int64) (*model.Driver, error)
 }
 
 type AssignInput struct {
@@ -216,6 +219,20 @@ func (u *deliveryUsecase) notifyBestEffort(ctx context.Context, to, subject, bod
 	if err := u.mailer.Send(ctx, email.Message{To: to, Subject: subject, Body: body}); err != nil {
 		log.Printf("email send failed: %v", err)
 	}
+}
+
+func (u *deliveryUsecase) RegisterDriver(ctx context.Context, userID int64, name, email, phone string) (*model.Driver, error) {
+	d := &model.Driver{
+		UserID: &userID,
+		Name:   name,
+		Email:  email,
+		Phone:  phone,
+	}
+	return u.repo.CreateDriver(ctx, d)
+}
+
+func (u *deliveryUsecase) GetMyDriver(ctx context.Context, userID int64) (*model.Driver, error) {
+	return u.repo.GetDriverByUserID(ctx, userID)
 }
 
 func (u *deliveryUsecase) publishBestEffort(ctx context.Context, delivery *model.Delivery) {

@@ -13,14 +13,10 @@ const saved = ref(false)
 const error = ref('')
 
 const selectedRole = ref<'customer' | 'driver' | 'manager'>('customer')
-const driverIdInput = ref('')
-const restaurantIdInput = ref('')
 
 onMounted(async () => {
   auth.init()
   selectedRole.value = (auth.role as any) ?? 'customer'
-  driverIdInput.value = auth.driverId ? String(auth.driverId) : ''
-  restaurantIdInput.value = auth.restaurantId ? String(auth.restaurantId) : ''
   try {
     const profile = await apiFetch<any>('/api/users/profile')
     auth.setUser(profile)
@@ -49,10 +45,7 @@ async function save() {
 }
 
 function saveRole() {
-  const did = driverIdInput.value ? Number(driverIdInput.value) : null
-  const rid = restaurantIdInput.value ? Number(restaurantIdInput.value) : null
-  auth.setRole(selectedRole.value, did, rid)
-
+  auth.setRole(selectedRole.value, null, null)
   if (selectedRole.value === 'driver') navigateTo('/driver')
   else if (selectedRole.value === 'manager') navigateTo('/restaurant')
 }
@@ -113,26 +106,6 @@ function saveRole() {
             ? 'bg-brand-500 text-white border-brand-500'
             : 'bg-white text-gray-600 border-gray-300 hover:border-brand-400'"
         >{{ r[1] }}</button>
-      </div>
-
-      <div v-if="selectedRole === 'driver'">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Driver ID</label>
-        <input
-          v-model="driverIdInput"
-          type="number"
-          placeholder="Введите ваш Driver ID"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-        />
-      </div>
-
-      <div v-if="selectedRole === 'manager'">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Restaurant ID (если уже есть)</label>
-        <input
-          v-model="restaurantIdInput"
-          type="number"
-          placeholder="Оставьте пустым для создания нового"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-        />
       </div>
 
       <button

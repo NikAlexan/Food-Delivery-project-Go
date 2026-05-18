@@ -7,6 +7,7 @@ option go_package = "food-delivery/restaurant-service/proto/pb";
 service RestaurantService {
   rpc CreateRestaurant(CreateRestaurantRequest) returns (RestaurantResponse);
   rpc GetRestaurant(RestaurantIdRequest)        returns (RestaurantResponse);
+  rpc GetMyRestaurant(Empty)                    returns (RestaurantResponse);
   rpc ListRestaurants(ListRestaurantsRequest)   returns (RestaurantList);
   rpc SearchRestaurants(SearchRequest)          returns (RestaurantList);
   rpc UpdateRestaurant(UpdateRestaurantRequest) returns (RestaurantResponse);
@@ -77,6 +78,7 @@ message RestaurantResponse {
   double rating        = 10;
   string created_at    = 11;
   string updated_at    = 12;
+  int64  owner_id      = 13;
 }
 
 message RestaurantList {

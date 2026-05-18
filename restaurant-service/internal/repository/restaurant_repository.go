@@ -17,8 +17,9 @@ type RestaurantRepository interface {
 	// Restaurant CRUD
 	CreateRestaurant(ctx context.Context, r *model.Restaurant) error
 	GetRestaurantByID(ctx context.Context, id int64) (*model.Restaurant, error)
+	GetByOwnerID(ctx context.Context, ownerID int64) (*model.Restaurant, error)
 	UpdateRestaurant(ctx context.Context, r *model.Restaurant) error
-	DeleteRestaurant(ctx context.Context, id int64) error
+	DeleteRestaurant(ctx context.Context, id, ownerID int64) error
 	ListRestaurants(ctx context.Context, f model.ListFilter) ([]*model.Restaurant, int, error)
 	SearchRestaurants(ctx context.Context, f model.SearchFilter) ([]*model.Restaurant, int, error)
 
@@ -43,18 +44,41 @@ func NewPostgresRepo(db *sql.DB) RestaurantRepository {
 
 func (r *postgresRepo) CreateRestaurant(ctx context.Context, rest *model.Restaurant) error {
 	return r.db.QueryRowContext(ctx,
-		`INSERT INTO restaurants (name, description, category_id, address, phone, image_url)
-		 VALUES ($1, $2, $3, $4, $5, $6)
+		`INSERT INTO restaurants (name, description, category_id, address, phone, image_url, owner_id)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7)
 		 RETURNING id, is_active, rating, created_at, updated_at`,
 		rest.Name, rest.Description, rest.CategoryID,
-		rest.Address, rest.Phone, rest.ImageURL,
+		rest.Address, rest.Phone, rest.ImageURL, rest.OwnerID,
 	).Scan(&rest.ID, &rest.IsActive, &rest.Rating, &rest.CreatedAt, &rest.UpdatedAt)
+}
+
+func (r *postgresRepo) GetByOwnerID(ctx context.Context, ownerID int64) (*model.Restaurant, error) {
+	rest := &model.Restaurant{}
+	err := r.db.QueryRowContext(ctx,
+		`SELECT r.id, r.owner_id, r.name, r.description, r.category_id,
+		        COALESCE(c.name, '') AS category_name,
+		        r.address, r.phone, r.image_url,
+		        r.is_active, r.rating, r.created_at, r.updated_at
+		 FROM restaurants r
+		 LEFT JOIN categories c ON c.id = r.category_id
+		 WHERE r.owner_id = $1
+		 LIMIT 1`,
+		ownerID,
+	).Scan(
+		&rest.ID, &rest.OwnerID, &rest.Name, &rest.Description, &rest.CategoryID, &rest.CategoryName,
+		&rest.Address, &rest.Phone, &rest.ImageURL, &rest.IsActive, &rest.Rating,
+		&rest.CreatedAt, &rest.UpdatedAt,
+	)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	return rest, err
 }
 
 func (r *postgresRepo) GetRestaurantByID(ctx context.Context, id int64) (*model.Restaurant, error) {
 	rest := &model.Restaurant{}
 	err := r.db.QueryRowContext(ctx,
-		`SELECT r.id, r.name, r.description, r.category_id,
+		`SELECT r.id, r.owner_id, r.name, r.description, r.category_id,
 		        COALESCE(c.name, '') AS category_name,
 		        r.address, r.phone, r.image_url,
 		        r.is_active, r.rating, r.created_at, r.updated_at
@@ -63,7 +87,7 @@ func (r *postgresRepo) GetRestaurantByID(ctx context.Context, id int64) (*model.
 		 WHERE r.id = $1`,
 		id,
 	).Scan(
-		&rest.ID, &rest.Name, &rest.Description, &rest.CategoryID, &rest.CategoryName,
+		&rest.ID, &rest.OwnerID, &rest.Name, &rest.Description, &rest.CategoryID, &rest.CategoryName,
 		&rest.Address, &rest.Phone, &rest.ImageURL, &rest.IsActive, &rest.Rating,
 		&rest.CreatedAt, &rest.UpdatedAt,
 	)
@@ -77,9 +101,9 @@ func (r *postgresRepo) UpdateRestaurant(ctx context.Context, rest *model.Restaur
 	res, err := r.db.ExecContext(ctx,
 		`UPDATE restaurants
 		 SET name=$1, description=$2, address=$3, phone=$4, image_url=$5, is_active=$6, updated_at=NOW()
-		 WHERE id=$7`,
+		 WHERE id=$7 AND owner_id=$8`,
 		rest.Name, rest.Description, rest.Address, rest.Phone,
-		rest.ImageURL, rest.IsActive, rest.ID,
+		rest.ImageURL, rest.IsActive, rest.ID, rest.OwnerID,
 	)
 	if err != nil {
 		return err
@@ -94,8 +118,8 @@ func (r *postgresRepo) UpdateRestaurant(ctx context.Context, rest *model.Restaur
 	return nil
 }
 
-func (r *postgresRepo) DeleteRestaurant(ctx context.Context, id int64) error {
-	res, err := r.db.ExecContext(ctx, `DELETE FROM restaurants WHERE id=$1`, id)
+func (r *postgresRepo) DeleteRestaurant(ctx context.Context, id, ownerID int64) error {
+	res, err := r.db.ExecContext(ctx, `DELETE FROM restaurants WHERE id=$1 AND owner_id=$2`, id, ownerID)
 	if err != nil {
 		return err
 	}
@@ -133,7 +157,7 @@ func (r *postgresRepo) ListRestaurants(ctx context.Context, f model.ListFilter) 
 
 	args = append(args, f.PageSize, offset)
 	listQuery := fmt.Sprintf(
-		`SELECT r.id, r.name, r.description, r.category_id,
+		`SELECT r.id, r.owner_id, r.name, r.description, r.category_id,
 		        COALESCE(c.name,'') AS category_name,
 		        r.address, r.phone, r.image_url,
 		        r.is_active, r.rating, r.created_at, r.updated_at
@@ -175,7 +199,7 @@ func (r *postgresRepo) SearchRestaurants(ctx context.Context, f model.SearchFilt
 	}
 
 	rows, err := r.db.QueryContext(ctx,
-		`SELECT r.id, r.name, r.description, r.category_id,
+		`SELECT r.id, r.owner_id, r.name, r.description, r.category_id,
 		        COALESCE(c.name,'') AS category_name,
 		        r.address, r.phone, r.image_url,
 		        r.is_active, r.rating, r.created_at, r.updated_at
@@ -200,7 +224,7 @@ func scanRestaurants(rows *sql.Rows, total int) ([]*model.Restaurant, int, error
 	for rows.Next() {
 		rest := &model.Restaurant{}
 		if err := rows.Scan(
-			&rest.ID, &rest.Name, &rest.Description, &rest.CategoryID, &rest.CategoryName,
+			&rest.ID, &rest.OwnerID, &rest.Name, &rest.Description, &rest.CategoryID, &rest.CategoryName,
 			&rest.Address, &rest.Phone, &rest.ImageURL, &rest.IsActive, &rest.Rating,
 			&rest.CreatedAt, &rest.UpdatedAt,
 		); err != nil {

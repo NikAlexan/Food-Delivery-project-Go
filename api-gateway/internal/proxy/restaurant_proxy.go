@@ -46,6 +46,16 @@ func (p *RestaurantProxy) CreateRestaurant(c *gin.Context) {
 	c.JSON(http.StatusCreated, resp)
 }
 
+// GetMyRestaurant handles GET /api/restaurants/my
+func (p *RestaurantProxy) GetMyRestaurant(c *gin.Context) {
+	resp, err := p.client.GetMyRestaurant(userContext(c), &pb.Empty{})
+	if err != nil {
+		respondGRPCError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
 // GetRestaurant handles GET /api/restaurants/:id
 func (p *RestaurantProxy) GetRestaurant(c *gin.Context) {
 	id, err := parseID(c, "id")

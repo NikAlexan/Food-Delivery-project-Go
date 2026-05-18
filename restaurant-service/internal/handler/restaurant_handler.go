@@ -63,10 +63,12 @@ func authenticatedUserID(ctx context.Context) (int64, error) {
 // ── Restaurant RPCs ───────────────────────────────────────────────────────────
 
 func (h *RestaurantHandler) CreateRestaurant(ctx context.Context, req *pb.CreateRestaurantRequest) (*pb.RestaurantResponse, error) {
-	if _, err := authenticatedUserID(ctx); err != nil {
+	uid, err := authenticatedUserID(ctx)
+	if err != nil {
 		return nil, err
 	}
 	r := &model.Restaurant{
+		OwnerID:     uid,
 		Name:        req.Name,
 		Description: req.Description,
 		CategoryID:  req.CategoryId,
@@ -79,6 +81,18 @@ func (h *RestaurantHandler) CreateRestaurant(ctx context.Context, req *pb.Create
 		return nil, mapErr(err)
 	}
 	return toRestaurantProto(result), nil
+}
+
+func (h *RestaurantHandler) GetMyRestaurant(ctx context.Context, _ *pb.Empty) (*pb.RestaurantResponse, error) {
+	uid, err := authenticatedUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	r, err := h.uc.GetMyRestaurant(ctx, uid)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	return toRestaurantProto(r), nil
 }
 
 func (h *RestaurantHandler) GetRestaurant(ctx context.Context, req *pb.RestaurantIdRequest) (*pb.RestaurantResponse, error) {
@@ -116,11 +130,13 @@ func (h *RestaurantHandler) SearchRestaurants(ctx context.Context, req *pb.Searc
 }
 
 func (h *RestaurantHandler) UpdateRestaurant(ctx context.Context, req *pb.UpdateRestaurantRequest) (*pb.RestaurantResponse, error) {
-	if _, err := authenticatedUserID(ctx); err != nil {
+	uid, err := authenticatedUserID(ctx)
+	if err != nil {
 		return nil, err
 	}
 	r := &model.Restaurant{
 		ID:          req.RestaurantId,
+		OwnerID:     uid,
 		Name:        req.Name,
 		Description: req.Description,
 		Address:     req.Address,
@@ -136,10 +152,11 @@ func (h *RestaurantHandler) UpdateRestaurant(ctx context.Context, req *pb.Update
 }
 
 func (h *RestaurantHandler) DeleteRestaurant(ctx context.Context, req *pb.RestaurantIdRequest) (*pb.Empty, error) {
-	if _, err := authenticatedUserID(ctx); err != nil {
+	uid, err := authenticatedUserID(ctx)
+	if err != nil {
 		return nil, err
 	}
-	if err := h.uc.DeleteRestaurant(ctx, req.RestaurantId); err != nil {
+	if err := h.uc.DeleteRestaurant(ctx, req.RestaurantId, uid); err != nil {
 		return nil, mapErr(err)
 	}
 	return &pb.Empty{}, nil
@@ -214,6 +231,7 @@ func (h *RestaurantHandler) GetMenu(ctx context.Context, req *pb.RestaurantIdReq
 func toRestaurantProto(r *model.Restaurant) *pb.RestaurantResponse {
 	return &pb.RestaurantResponse{
 		RestaurantId: r.ID,
+		OwnerId:      r.OwnerID,
 		Name:         r.Name,
 		Description:  r.Description,
 		CategoryId:   r.CategoryID,

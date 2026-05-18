@@ -190,6 +190,49 @@ func (h *DeliveryHandler) CancelDelivery(ctx context.Context, req *pb.DeliveryId
 	return toPBDelivery(delivery), nil
 }
 
+func (h *DeliveryHandler) RegisterDriver(ctx context.Context, req *pb.RegisterDriverRequest) (*pb.DriverProfile, error) {
+	uid, err := authenticatedUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if req.Name == "" || req.Email == "" {
+		return nil, status.Error(codes.InvalidArgument, "name and email are required")
+	}
+	driver, err := h.uc.RegisterDriver(ctx, uid, req.Name, req.Email, req.Phone)
+	if errors.Is(err, usecase.ErrAlreadyRegistered) {
+		return nil, status.Error(codes.AlreadyExists, "already registered as driver")
+	}
+	if err != nil {
+		return nil, internal(ctx, "RegisterDriver", err)
+	}
+	return toPBDriverProfile(driver), nil
+}
+
+func (h *DeliveryHandler) GetMyDriver(ctx context.Context, _ *pb.Empty) (*pb.DriverProfile, error) {
+	uid, err := authenticatedUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	driver, err := h.uc.GetMyDriver(ctx, uid)
+	if errors.Is(err, repository.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "driver profile not found")
+	}
+	if err != nil {
+		return nil, internal(ctx, "GetMyDriver", err)
+	}
+	return toPBDriverProfile(driver), nil
+}
+
+func toPBDriverProfile(d *model.Driver) *pb.DriverProfile {
+	return &pb.DriverProfile{
+		DriverId:    d.ID,
+		Name:        d.Name,
+		Email:       d.Email,
+		Phone:       d.Phone,
+		IsAvailable: d.IsAvailable,
+	}
+}
+
 func toPBList(deliveries []model.Delivery) *pb.DeliveryList {
 	items := make([]*pb.Delivery, 0, len(deliveries))
 	for _, delivery := range deliveries {

@@ -9,13 +9,24 @@ const { apiFetch } = useApi()
 
 const deliveries = ref<any[]>([])
 const loading = ref(true)
-const driverIdInput = ref('')
+const registering = ref(false)
+const showRegisterForm = ref(false)
+const registerError = ref('')
+
+const registerForm = reactive({ name: '', email: '', phone: '' })
 
 onMounted(async () => {
   auth.init()
-  driverIdInput.value = auth.driverId ? String(auth.driverId) : ''
-  if (auth.driverId) await load()
-  else loading.value = false
+  try {
+    const data = await apiFetch<any>('/api/delivery/my-driver')
+    auth.setRole('driver', data.driver_id, null)
+    await load()
+  } catch {
+    showRegisterForm.value = true
+    registerForm.name = auth.user?.name ?? ''
+    registerForm.email = auth.user?.email ?? ''
+    loading.value = false
+  }
 })
 
 async function load() {
@@ -28,11 +39,22 @@ async function load() {
   }
 }
 
-function setDriver() {
-  const id = Number(driverIdInput.value)
-  if (!id) return
-  auth.setRole('driver', id, null)
-  load()
+async function register() {
+  registering.value = true
+  registerError.value = ''
+  try {
+    const data = await apiFetch<any>('/api/delivery/register', {
+      method: 'POST',
+      body: JSON.stringify(registerForm),
+    })
+    auth.setRole('driver', data.driver_id, null)
+    showRegisterForm.value = false
+    await load()
+  } catch (e: any) {
+    registerError.value = e?.error ?? 'Ошибка регистрации'
+  } finally {
+    registering.value = false
+  }
 }
 
 const statusLabel: Record<string, string> = {
@@ -54,18 +76,38 @@ const statusColor: Record<string, string> = {
   <div>
     <h1 class="text-xl font-bold text-gray-900 mb-6">Мои доставки</h1>
 
-    <div v-if="!auth.driverId" class="max-w-sm mx-auto bg-white rounded-xl shadow-sm p-6 space-y-4">
-      <p class="text-sm text-gray-600">Введите ваш Driver ID для просмотра доставок</p>
-      <input
-        v-model="driverIdInput"
-        type="number"
-        placeholder="Driver ID"
-        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-      />
+    <div v-if="showRegisterForm" class="max-w-sm mx-auto bg-white rounded-xl shadow-sm p-6 space-y-4">
+      <p class="text-sm text-gray-600">Зарегистрируйтесь как курьер для начала работы</p>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Имя *</label>
+        <input
+          v-model="registerForm.name"
+          required
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+        <input
+          v-model="registerForm.email"
+          type="email"
+          required
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Телефон</label>
+        <input
+          v-model="registerForm.phone"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        />
+      </div>
+      <p v-if="registerError" class="text-sm text-red-500">{{ registerError }}</p>
       <button
-        @click="setDriver"
-        class="w-full bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 rounded-lg transition-colors"
-      >Продолжить</button>
+        @click="register"
+        :disabled="registering"
+        class="w-full bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 rounded-lg transition-colors disabled:opacity-60"
+      >{{ registering ? 'Регистрация...' : 'Стать курьером' }}</button>
     </div>
 
     <template v-else>

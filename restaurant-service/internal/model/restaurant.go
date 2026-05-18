@@ -12,6 +12,7 @@ type Category struct {
 // Restaurant is the core domain entity.
 type Restaurant struct {
 	ID           int64     `db:"id"`
+	OwnerID      int64     `db:"owner_id"`
 	Name         string    `db:"name"`
 	Description  string    `db:"description"`
 	CategoryID   int64     `db:"category_id"`

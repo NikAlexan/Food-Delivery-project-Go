@@ -42,6 +42,7 @@ func New(userProxy *proxy.UserProxy, deliveryProxy *proxy.DeliveryProxy, restaur
 
 		auth := restaurants.Group("", middleware.JWTAuth(jwtSecret))
 		{
+			auth.GET("/my", restaurantProxy.GetMyRestaurant)
 			auth.POST("", restaurantProxy.CreateRestaurant)
 			auth.PUT("/:id", restaurantProxy.UpdateRestaurant)
 			auth.DELETE("/:id", restaurantProxy.DeleteRestaurant)
@@ -53,6 +54,8 @@ func New(userProxy *proxy.UserProxy, deliveryProxy *proxy.DeliveryProxy, restaur
 
 	delivery := r.Group("/api/delivery", middleware.JWTAuth(jwtSecret))
 	{
+		delivery.POST("/register", deliveryProxy.RegisterDriver)
+		delivery.GET("/my-driver", deliveryProxy.GetMyDriver)
 		delivery.POST("/assign", deliveryProxy.AssignDriver)
 		delivery.PATCH("/location", deliveryProxy.UpdateDriverLocation)
 		delivery.POST("/:id/complete", deliveryProxy.CompleteDelivery)

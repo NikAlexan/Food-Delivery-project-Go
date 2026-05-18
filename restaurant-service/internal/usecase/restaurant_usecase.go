@@ -32,8 +32,9 @@ var (
 type RestaurantUsecase interface {
 	CreateRestaurant(ctx context.Context, r *model.Restaurant) (*model.Restaurant, error)
 	GetRestaurant(ctx context.Context, id int64) (*model.Restaurant, error)
+	GetMyRestaurant(ctx context.Context, ownerID int64) (*model.Restaurant, error)
 	UpdateRestaurant(ctx context.Context, r *model.Restaurant) (*model.Restaurant, error)
-	DeleteRestaurant(ctx context.Context, id int64) error
+	DeleteRestaurant(ctx context.Context, id, ownerID int64) error
 	ListRestaurants(ctx context.Context, f model.ListFilter) ([]*model.Restaurant, int, error)
 	SearchRestaurants(ctx context.Context, f model.SearchFilter) ([]*model.Restaurant, int, error)
 
@@ -99,6 +100,10 @@ func (u *restaurantUsecase) GetRestaurant(ctx context.Context, id int64) (*model
 	return r, nil
 }
 
+func (u *restaurantUsecase) GetMyRestaurant(ctx context.Context, ownerID int64) (*model.Restaurant, error) {
+	return u.repo.GetByOwnerID(ctx, ownerID)
+}
+
 func (u *restaurantUsecase) UpdateRestaurant(ctx context.Context, r *model.Restaurant) (*model.Restaurant, error) {
 	if r.Name == "" {
 		return nil, ErrInvalidInput
@@ -111,8 +116,8 @@ func (u *restaurantUsecase) UpdateRestaurant(ctx context.Context, r *model.Resta
 	return u.repo.GetRestaurantByID(ctx, r.ID)
 }
 
-func (u *restaurantUsecase) DeleteRestaurant(ctx context.Context, id int64) error {
-	if err := u.repo.DeleteRestaurant(ctx, id); err != nil {
+func (u *restaurantUsecase) DeleteRestaurant(ctx context.Context, id, ownerID int64) error {
+	if err := u.repo.DeleteRestaurant(ctx, id, ownerID); err != nil {
 		return err
 	}
 	u.cache.Del(ctx, restaurantCacheKey(id))
