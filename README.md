@@ -36,7 +36,7 @@ Svc     Svc       Svc          Svc
 | Email через SMTP (Gmail / Microsoft) | 10% | Alikhan (Delivery) | ✅ Выполнено (MailHog) |
 | Тесты (Unit + Integration) | 10% | Каждый студент | ✅ Выполнено |
 | ⭐ Бонус: Frontend (JS / Native) | +10% | Nikita (по желанию) | ✅ Выполнено (Nuxt/Vue) |
-| ⭐ Бонус: Grafana (трейсинг, метрики, логи) | +10% | Abzal (по желанию) | ❌ Не реализовано |
+| ⭐ Бонус: Grafana (трейсинг, метрики, логи) | +10% | Abzal (по желанию) | ✅ Выполнено |
 
 ---
 
