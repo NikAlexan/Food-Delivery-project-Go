@@ -27,7 +27,10 @@ onMounted(async () => {
   } catch {}
 })
 
-const total = computed(() => cart.items.reduce((s, i) => s + i.price * i.quantity, 0))
+const DELIVERY_FEE = 500
+
+const subtotal = computed(() => cart.items.reduce((s, i) => s + i.price * i.quantity, 0))
+const total = computed(() => subtotal.value + DELIVERY_FEE)
 
 async function place() {
   if (!selectedAddress.value.trim()) {
@@ -119,7 +122,15 @@ async function place() {
             <span>{{ (item.price * item.quantity).toFixed(2) }} ₸</span>
           </li>
         </ul>
-        <div class="mt-3 pt-3 border-t flex justify-between font-semibold text-gray-900">
+        <div class="mt-3 pt-2 flex justify-between text-sm text-gray-500">
+          <span>Сумма заказа</span>
+          <span>{{ subtotal.toFixed(2) }} ₸</span>
+        </div>
+        <div class="flex justify-between text-sm text-gray-500">
+          <span>Доставка</span>
+          <span>{{ DELIVERY_FEE.toFixed(2) }} ₸</span>
+        </div>
+        <div class="mt-2 pt-2 border-t flex justify-between font-semibold text-gray-900">
           <span>Итого</span>
           <span>{{ total.toFixed(2) }} ₸</span>
         </div>
