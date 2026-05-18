@@ -115,7 +115,7 @@ func (p *OrderProxy) UpdateOrderStatus(c *gin.Context) {
 		return
 	}
 
-	resp, err := p.client.UpdateOrderStatus(c.Request.Context(), &pb.UpdateStatusRequest{
+	resp, err := p.client.UpdateOrderStatus(userContext(c), &pb.UpdateStatusRequest{
 		OrderId: id,
 		Status:  body.Status,
 	})
@@ -133,7 +133,7 @@ func (p *OrderProxy) CancelOrder(c *gin.Context) {
 		return
 	}
 
-	resp, err := p.client.CancelOrder(c.Request.Context(), &pb.OrderIdRequest{OrderId: id})
+	resp, err := p.client.CancelOrder(userContext(c), &pb.OrderIdRequest{OrderId: id})
 	if err != nil {
 		respondGRPCError(c, err)
 		return

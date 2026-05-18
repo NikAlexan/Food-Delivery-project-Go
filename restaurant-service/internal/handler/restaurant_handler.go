@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"log"
+	"strconv"
 	"time"
 
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
 	"food-delivery/restaurant-service/internal/model"
@@ -42,9 +44,28 @@ func mapErr(err error) error {
 	}
 }
 
+func authenticatedUserID(ctx context.Context) (int64, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return 0, status.Error(codes.Unauthenticated, "missing auth context")
+	}
+	values := md.Get("x-user-id")
+	if len(values) == 0 {
+		return 0, status.Error(codes.Unauthenticated, "missing auth context")
+	}
+	userID, err := strconv.ParseInt(values[0], 10, 64)
+	if err != nil || userID <= 0 {
+		return 0, status.Error(codes.Unauthenticated, "invalid auth context")
+	}
+	return userID, nil
+}
+
 // ── Restaurant RPCs ───────────────────────────────────────────────────────────
 
 func (h *RestaurantHandler) CreateRestaurant(ctx context.Context, req *pb.CreateRestaurantRequest) (*pb.RestaurantResponse, error) {
+	if _, err := authenticatedUserID(ctx); err != nil {
+		return nil, err
+	}
 	r := &model.Restaurant{
 		Name:        req.Name,
 		Description: req.Description,
@@ -95,6 +116,9 @@ func (h *RestaurantHandler) SearchRestaurants(ctx context.Context, req *pb.Searc
 }
 
 func (h *RestaurantHandler) UpdateRestaurant(ctx context.Context, req *pb.UpdateRestaurantRequest) (*pb.RestaurantResponse, error) {
+	if _, err := authenticatedUserID(ctx); err != nil {
+		return nil, err
+	}
 	r := &model.Restaurant{
 		ID:          req.RestaurantId,
 		Name:        req.Name,
@@ -112,6 +136,9 @@ func (h *RestaurantHandler) UpdateRestaurant(ctx context.Context, req *pb.Update
 }
 
 func (h *RestaurantHandler) DeleteRestaurant(ctx context.Context, req *pb.RestaurantIdRequest) (*pb.Empty, error) {
+	if _, err := authenticatedUserID(ctx); err != nil {
+		return nil, err
+	}
 	if err := h.uc.DeleteRestaurant(ctx, req.RestaurantId); err != nil {
 		return nil, mapErr(err)
 	}
@@ -121,6 +148,9 @@ func (h *RestaurantHandler) DeleteRestaurant(ctx context.Context, req *pb.Restau
 // ── Menu RPCs ─────────────────────────────────────────────────────────────────
 
 func (h *RestaurantHandler) CreateMenuItem(ctx context.Context, req *pb.CreateMenuItemRequest) (*pb.MenuItemResponse, error) {
+	if _, err := authenticatedUserID(ctx); err != nil {
+		return nil, err
+	}
 	item := &model.MenuItem{
 		RestaurantID: req.RestaurantId,
 		Name:         req.Name,
@@ -137,6 +167,9 @@ func (h *RestaurantHandler) CreateMenuItem(ctx context.Context, req *pb.CreateMe
 }
 
 func (h *RestaurantHandler) UpdateMenuItem(ctx context.Context, req *pb.UpdateMenuItemRequest) (*pb.MenuItemResponse, error) {
+	if _, err := authenticatedUserID(ctx); err != nil {
+		return nil, err
+	}
 	item := &model.MenuItem{
 		ID:           req.ItemId,
 		RestaurantID: req.RestaurantId,
@@ -155,6 +188,9 @@ func (h *RestaurantHandler) UpdateMenuItem(ctx context.Context, req *pb.UpdateMe
 }
 
 func (h *RestaurantHandler) DeleteMenuItem(ctx context.Context, req *pb.MenuItemIdRequest) (*pb.Empty, error) {
+	if _, err := authenticatedUserID(ctx); err != nil {
+		return nil, err
+	}
 	if err := h.uc.DeleteMenuItem(ctx, req.ItemId); err != nil {
 		return nil, mapErr(err)
 	}

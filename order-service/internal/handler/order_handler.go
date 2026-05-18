@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"log"
+	"strconv"
 	"time"
 
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
 	"food-delivery/order-service/internal/model"
@@ -21,6 +23,22 @@ type OrderHandler struct {
 
 func NewOrderHandler(uc usecase.OrderUsecase) *OrderHandler {
 	return &OrderHandler{uc: uc}
+}
+
+func authenticatedUserID(ctx context.Context) (int64, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return 0, status.Error(codes.Unauthenticated, "missing auth context")
+	}
+	values := md.Get("x-user-id")
+	if len(values) == 0 {
+		return 0, status.Error(codes.Unauthenticated, "missing auth context")
+	}
+	userID, err := strconv.ParseInt(values[0], 10, 64)
+	if err != nil || userID <= 0 {
+		return 0, status.Error(codes.Unauthenticated, "invalid auth context")
+	}
+	return userID, nil
 }
 
 func internal(ctx context.Context, op string, err error) error {
@@ -70,6 +88,9 @@ func (h *OrderHandler) ListUserOrders(ctx context.Context, req *pb.UserIdRequest
 }
 
 func (h *OrderHandler) UpdateOrderStatus(ctx context.Context, req *pb.UpdateStatusRequest) (*pb.Order, error) {
+	if _, err := authenticatedUserID(ctx); err != nil {
+		return nil, err
+	}
 	order, err := h.uc.UpdateOrderStatus(ctx, req.OrderId, model.OrderStatus(req.Status))
 	if errors.Is(err, usecase.ErrOrderNotFound) {
 		return nil, status.Error(codes.NotFound, "order not found")
@@ -81,6 +102,9 @@ func (h *OrderHandler) UpdateOrderStatus(ctx context.Context, req *pb.UpdateStat
 }
 
 func (h *OrderHandler) CancelOrder(ctx context.Context, req *pb.OrderIdRequest) (*pb.Order, error) {
+	if _, err := authenticatedUserID(ctx); err != nil {
+		return nil, err
+	}
 	order, err := h.uc.CancelOrder(ctx, req.OrderId)
 	if errors.Is(err, usecase.ErrOrderNotFound) {
 		return nil, status.Error(codes.NotFound, "order not found")

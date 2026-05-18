@@ -38,7 +38,7 @@ func (p *RestaurantProxy) CreateRestaurant(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	resp, err := p.client.CreateRestaurant(c.Request.Context(), &req)
+	resp, err := p.client.CreateRestaurant(userContext(c), &req)
 	if err != nil {
 		respondGRPCError(c, err)
 		return
@@ -113,7 +113,7 @@ func (p *RestaurantProxy) UpdateRestaurant(c *gin.Context) {
 	}
 	req.RestaurantId = id
 
-	resp, err := p.client.UpdateRestaurant(c.Request.Context(), &req)
+	resp, err := p.client.UpdateRestaurant(userContext(c), &req)
 	if err != nil {
 		respondGRPCError(c, err)
 		return
@@ -127,7 +127,7 @@ func (p *RestaurantProxy) DeleteRestaurant(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	_, err = p.client.DeleteRestaurant(c.Request.Context(), &pb.RestaurantIdRequest{RestaurantId: id})
+	_, err = p.client.DeleteRestaurant(userContext(c), &pb.RestaurantIdRequest{RestaurantId: id})
 	if err != nil {
 		respondGRPCError(c, err)
 		return
@@ -164,7 +164,7 @@ func (p *RestaurantProxy) CreateMenuItem(c *gin.Context) {
 	}
 	req.RestaurantId = id
 
-	resp, err := p.client.CreateMenuItem(c.Request.Context(), &req)
+	resp, err := p.client.CreateMenuItem(userContext(c), &req)
 	if err != nil {
 		respondGRPCError(c, err)
 		return
@@ -191,7 +191,7 @@ func (p *RestaurantProxy) UpdateMenuItem(c *gin.Context) {
 	req.RestaurantId = restaurantID
 	req.ItemId = itemID
 
-	resp, err := p.client.UpdateMenuItem(c.Request.Context(), &req)
+	resp, err := p.client.UpdateMenuItem(userContext(c), &req)
 	if err != nil {
 		respondGRPCError(c, err)
 		return
@@ -205,7 +205,7 @@ func (p *RestaurantProxy) DeleteMenuItem(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	_, err = p.client.DeleteMenuItem(c.Request.Context(), &pb.MenuItemIdRequest{ItemId: itemID})
+	_, err = p.client.DeleteMenuItem(userContext(c), &pb.MenuItemIdRequest{ItemId: itemID})
 	if err != nil {
 		respondGRPCError(c, err)
 		return
