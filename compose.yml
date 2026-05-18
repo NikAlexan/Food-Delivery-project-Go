@@ -104,6 +104,7 @@ services:
       context: ./user-service
       dockerfile: Dockerfile
     restart: unless-stopped
+    command: sh -c './goose -dir migrations postgres "$$DATABASE_URL" up && ./server'
     depends_on:
       postgres-user:
         condition: service_healthy
@@ -130,6 +131,7 @@ services:
       context: ./restaurant-service
       dockerfile: Dockerfile
     restart: unless-stopped
+    command: sh -c './goose -dir migrations postgres "$$DATABASE_URL" up && ./server'
     depends_on:
       postgres-restaurant:
         condition: service_healthy
@@ -155,6 +157,7 @@ services:
       context: ./order-service
       dockerfile: Dockerfile
     restart: unless-stopped
+    command: sh -c './goose -dir migrations postgres "$$DATABASE_URL" up && ./server'
     depends_on:
       postgres-order:
         condition: service_healthy
@@ -177,6 +180,7 @@ services:
       context: ./delivery-service
       dockerfile: Dockerfile
     restart: unless-stopped
+    command: sh -c './goose -dir migrations postgres "$$DATABASE_URL" up && ./server'
     depends_on:
       postgres-delivery:
         condition: service_healthy

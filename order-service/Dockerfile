@@ -12,4 +12,4 @@ WORKDIR /app
 COPY --from=builder /server ./server
 COPY --from=builder /go/bin/goose ./goose
 COPY migrations ./migrations
-ENTRYPOINT ["sh", "-c", "./goose -dir migrations postgres \"$DATABASE_URL\" up && ./server"]
+ENTRYPOINT ["./server"]
