@@ -83,7 +83,10 @@ func (h *DeliveryHandler) GetDelivery(ctx context.Context, req *pb.DeliveryIdReq
 		return nil, internal(ctx, "GetDelivery", err)
 	}
 	if delivery.UserID != userID {
-		return nil, status.Error(codes.PermissionDenied, "forbidden")
+		driver, err := h.uc.GetMyDriver(ctx, userID)
+		if err != nil || driver.ID != delivery.DriverID {
+			return nil, status.Error(codes.PermissionDenied, "forbidden")
+		}
 	}
 	return toPBDelivery(delivery), nil
 }
