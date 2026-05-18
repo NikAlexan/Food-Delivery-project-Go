@@ -669,6 +669,50 @@ func (x *RegisterDriverRequest) GetPhone() string {
 	return ""
 }
 
+type AvailabilityRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Available     bool                   `protobuf:"varint,1,opt,name=available,proto3" json:"available,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AvailabilityRequest) Reset() {
+	*x = AvailabilityRequest{}
+	mi := &file_delivery_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AvailabilityRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AvailabilityRequest) ProtoMessage() {}
+
+func (x *AvailabilityRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_delivery_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AvailabilityRequest.ProtoReflect.Descriptor instead.
+func (*AvailabilityRequest) Descriptor() ([]byte, []int) {
+	return file_delivery_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *AvailabilityRequest) GetAvailable() bool {
+	if x != nil {
+		return x.Available
+	}
+	return false
+}
+
 type DriverProfile struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	DriverId      int64                  `protobuf:"varint,1,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
@@ -682,7 +726,7 @@ type DriverProfile struct {
 
 func (x *DriverProfile) Reset() {
 	*x = DriverProfile{}
-	mi := &file_delivery_proto_msgTypes[10]
+	mi := &file_delivery_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -694,7 +738,7 @@ func (x *DriverProfile) String() string {
 func (*DriverProfile) ProtoMessage() {}
 
 func (x *DriverProfile) ProtoReflect() protoreflect.Message {
-	mi := &file_delivery_proto_msgTypes[10]
+	mi := &file_delivery_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -707,7 +751,7 @@ func (x *DriverProfile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DriverProfile.ProtoReflect.Descriptor instead.
 func (*DriverProfile) Descriptor() ([]byte, []int) {
-	return file_delivery_proto_rawDescGZIP(), []int{10}
+	return file_delivery_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *DriverProfile) GetDriverId() int64 {
@@ -809,13 +853,15 @@ const file_delivery_proto_rawDesc = "" +
 	"\x15RegisterDriverRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x14\n" +
-	"\x05phone\x18\x03 \x01(\tR\x05phone\"\x8f\x01\n" +
+	"\x05phone\x18\x03 \x01(\tR\x05phone\"3\n" +
+	"\x13AvailabilityRequest\x12\x1c\n" +
+	"\tavailable\x18\x01 \x01(\bR\tavailable\"\x8f\x01\n" +
 	"\rDriverProfile\x12\x1b\n" +
 	"\tdriver_id\x18\x01 \x01(\x03R\bdriverId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x14\n" +
 	"\x05phone\x18\x04 \x01(\tR\x05phone\x12!\n" +
-	"\fis_available\x18\x05 \x01(\bR\visAvailable2\xb9\x05\n" +
+	"\fis_available\x18\x05 \x01(\bR\visAvailable2\x84\x06\n" +
 	"\x0fDeliveryService\x12;\n" +
 	"\fAssignDriver\x12\x17.delivery.AssignRequest\x1a\x12.delivery.Delivery\x12>\n" +
 	"\vGetDelivery\x12\x1b.delivery.DeliveryIdRequest\x1a\x12.delivery.Delivery\x12B\n" +
@@ -826,7 +872,8 @@ const file_delivery_proto_rawDesc = "" +
 	"\x12GetDeliveryHistory\x12\x17.delivery.UserIdRequest\x1a\x16.delivery.DeliveryList\x12A\n" +
 	"\x0eCancelDelivery\x12\x1b.delivery.DeliveryIdRequest\x1a\x12.delivery.Delivery\x12J\n" +
 	"\x0eRegisterDriver\x12\x1f.delivery.RegisterDriverRequest\x1a\x17.delivery.DriverProfile\x127\n" +
-	"\vGetMyDriver\x12\x0f.delivery.Empty\x1a\x17.delivery.DriverProfileB)Z'food-delivery/delivery-service/proto/pbb\x06proto3"
+	"\vGetMyDriver\x12\x0f.delivery.Empty\x1a\x17.delivery.DriverProfile\x12I\n" +
+	"\x0fSetAvailability\x12\x1d.delivery.AvailabilityRequest\x1a\x17.delivery.DriverProfileB)Z'food-delivery/delivery-service/proto/pbb\x06proto3"
 
 var (
 	file_delivery_proto_rawDescOnce sync.Once
@@ -840,7 +887,7 @@ func file_delivery_proto_rawDescGZIP() []byte {
 	return file_delivery_proto_rawDescData
 }
 
-var file_delivery_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_delivery_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_delivery_proto_goTypes = []any{
 	(*AssignRequest)(nil),         // 0: delivery.AssignRequest
 	(*DeliveryIdRequest)(nil),     // 1: delivery.DeliveryIdRequest
@@ -852,7 +899,8 @@ var file_delivery_proto_goTypes = []any{
 	(*DeliveryList)(nil),          // 7: delivery.DeliveryList
 	(*Empty)(nil),                 // 8: delivery.Empty
 	(*RegisterDriverRequest)(nil), // 9: delivery.RegisterDriverRequest
-	(*DriverProfile)(nil),         // 10: delivery.DriverProfile
+	(*AvailabilityRequest)(nil),   // 10: delivery.AvailabilityRequest
+	(*DriverProfile)(nil),         // 11: delivery.DriverProfile
 }
 var file_delivery_proto_depIdxs = []int32{
 	5,  // 0: delivery.DeliveryList.deliveries:type_name -> delivery.Delivery
@@ -866,18 +914,20 @@ var file_delivery_proto_depIdxs = []int32{
 	1,  // 8: delivery.DeliveryService.CancelDelivery:input_type -> delivery.DeliveryIdRequest
 	9,  // 9: delivery.DeliveryService.RegisterDriver:input_type -> delivery.RegisterDriverRequest
 	8,  // 10: delivery.DeliveryService.GetMyDriver:input_type -> delivery.Empty
-	5,  // 11: delivery.DeliveryService.AssignDriver:output_type -> delivery.Delivery
-	5,  // 12: delivery.DeliveryService.GetDelivery:output_type -> delivery.Delivery
-	8,  // 13: delivery.DeliveryService.UpdateDriverLocation:output_type -> delivery.Empty
-	6,  // 14: delivery.DeliveryService.TrackDelivery:output_type -> delivery.DeliveryStatus
-	5,  // 15: delivery.DeliveryService.CompleteDelivery:output_type -> delivery.Delivery
-	7,  // 16: delivery.DeliveryService.ListDriverDeliveries:output_type -> delivery.DeliveryList
-	7,  // 17: delivery.DeliveryService.GetDeliveryHistory:output_type -> delivery.DeliveryList
-	5,  // 18: delivery.DeliveryService.CancelDelivery:output_type -> delivery.Delivery
-	10, // 19: delivery.DeliveryService.RegisterDriver:output_type -> delivery.DriverProfile
-	10, // 20: delivery.DeliveryService.GetMyDriver:output_type -> delivery.DriverProfile
-	11, // [11:21] is the sub-list for method output_type
-	1,  // [1:11] is the sub-list for method input_type
+	10, // 11: delivery.DeliveryService.SetAvailability:input_type -> delivery.AvailabilityRequest
+	5,  // 12: delivery.DeliveryService.AssignDriver:output_type -> delivery.Delivery
+	5,  // 13: delivery.DeliveryService.GetDelivery:output_type -> delivery.Delivery
+	8,  // 14: delivery.DeliveryService.UpdateDriverLocation:output_type -> delivery.Empty
+	6,  // 15: delivery.DeliveryService.TrackDelivery:output_type -> delivery.DeliveryStatus
+	5,  // 16: delivery.DeliveryService.CompleteDelivery:output_type -> delivery.Delivery
+	7,  // 17: delivery.DeliveryService.ListDriverDeliveries:output_type -> delivery.DeliveryList
+	7,  // 18: delivery.DeliveryService.GetDeliveryHistory:output_type -> delivery.DeliveryList
+	5,  // 19: delivery.DeliveryService.CancelDelivery:output_type -> delivery.Delivery
+	11, // 20: delivery.DeliveryService.RegisterDriver:output_type -> delivery.DriverProfile
+	11, // 21: delivery.DeliveryService.GetMyDriver:output_type -> delivery.DriverProfile
+	11, // 22: delivery.DeliveryService.SetAvailability:output_type -> delivery.DriverProfile
+	12, // [12:23] is the sub-list for method output_type
+	1,  // [1:12] is the sub-list for method input_type
 	1,  // [1:1] is the sub-list for extension type_name
 	1,  // [1:1] is the sub-list for extension extendee
 	0,  // [0:1] is the sub-list for field type_name
@@ -894,7 +944,7 @@ func file_delivery_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_delivery_proto_rawDesc), len(file_delivery_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -12,6 +12,8 @@ const loading = ref(true)
 const registering = ref(false)
 const showRegisterForm = ref(false)
 const registerError = ref('')
+const isAvailable = ref(false)
+const togglingAvailability = ref(false)
 
 const registerForm = reactive({ name: '', email: '', phone: '' })
 
@@ -20,6 +22,7 @@ onMounted(async () => {
   try {
     const data = await apiFetch<any>('/api/delivery/my-driver')
     auth.setRole('driver', data.driver_id, null)
+    isAvailable.value = data.is_available
     await load()
   } catch {
     showRegisterForm.value = true
@@ -28,6 +31,19 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+async function toggleAvailability() {
+  togglingAvailability.value = true
+  try {
+    const data = await apiFetch<any>('/api/delivery/availability', {
+      method: 'PATCH',
+      body: JSON.stringify({ available: !isAvailable.value }),
+    })
+    isAvailable.value = data.is_available
+  } finally {
+    togglingAvailability.value = false
+  }
+}
 
 async function load() {
   loading.value = true
@@ -111,6 +127,18 @@ const statusColor: Record<string, string> = {
     </div>
 
     <template v-else>
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-sm font-medium" :class="isAvailable ? 'text-green-600' : 'text-gray-400'">
+          {{ isAvailable ? 'На линии' : 'Не на линии' }}
+        </span>
+        <button
+          @click="toggleAvailability"
+          :disabled="togglingAvailability"
+          class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors disabled:opacity-60"
+          :class="isAvailable ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'"
+        >{{ togglingAvailability ? '...' : isAvailable ? 'Уйти с линии' : 'Выйти на линию' }}</button>
+      </div>
+
       <div v-if="loading" class="text-center py-12 text-gray-400">Загрузка...</div>
 
       <div v-else-if="deliveries.length === 0" class="text-center py-12 text-gray-400">

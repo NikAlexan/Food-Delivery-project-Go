@@ -15,6 +15,7 @@ service DeliveryService {
   rpc CancelDelivery(DeliveryIdRequest) returns (Delivery);
   rpc RegisterDriver(RegisterDriverRequest) returns (DriverProfile);
   rpc GetMyDriver(Empty) returns (DriverProfile);
+  rpc SetAvailability(AvailabilityRequest) returns (DriverProfile);
 }
 
 message AssignRequest {
@@ -80,6 +81,10 @@ message RegisterDriverRequest {
   string name  = 1;
   string email = 2;
   string phone = 3;
+}
+
+message AvailabilityRequest {
+  bool available = 1;
 }
 
 message DriverProfile {

@@ -56,6 +56,7 @@ func New(userProxy *proxy.UserProxy, deliveryProxy *proxy.DeliveryProxy, restaur
 	{
 		delivery.POST("/register", deliveryProxy.RegisterDriver)
 		delivery.GET("/my-driver", deliveryProxy.GetMyDriver)
+		delivery.PATCH("/availability", deliveryProxy.SetAvailability)
 		delivery.POST("/assign", deliveryProxy.AssignDriver)
 		delivery.PATCH("/location", deliveryProxy.UpdateDriverLocation)
 		delivery.POST("/:id/complete", deliveryProxy.CompleteDelivery)

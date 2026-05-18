@@ -28,6 +28,7 @@ type DeliveryRepository interface {
 	GetDeliveryHistory(ctx context.Context, userID int64) ([]model.Delivery, error)
 	CreateDriver(ctx context.Context, d *model.Driver) (*model.Driver, error)
 	GetDriverByUserID(ctx context.Context, userID int64) (*model.Driver, error)
+	SetDriverAvailability(ctx context.Context, driverID int64, available bool) (*model.Driver, error)
 }
 
 type postgresDeliveryRepo struct {
@@ -364,4 +365,19 @@ func scanDeliveries(rows *sql.Rows) ([]model.Delivery, error) {
 		deliveries = append(deliveries, *delivery)
 	}
 	return deliveries, rows.Err()
+}
+
+func (r *postgresDeliveryRepo) SetDriverAvailability(ctx context.Context, driverID int64, available bool) (*model.Driver, error) {
+	d := &model.Driver{}
+	err := r.db.QueryRowContext(ctx,
+		`UPDATE drivers SET is_available = $1, updated_at = NOW()
+		 WHERE id = $2
+		 RETURNING id, user_id, name, email, phone, is_available, current_latitude, current_longitude, created_at, updated_at`,
+		available, driverID,
+	).Scan(&d.ID, &d.UserID, &d.Name, &d.Email, &d.Phone, &d.IsAvailable,
+		&d.CurrentLatitude, &d.CurrentLongitude, &d.CreatedAt, &d.UpdatedAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	return d, err
 }

@@ -226,6 +226,21 @@ func (h *DeliveryHandler) GetMyDriver(ctx context.Context, _ *pb.Empty) (*pb.Dri
 	return toPBDriverProfile(driver), nil
 }
 
+func (h *DeliveryHandler) SetAvailability(ctx context.Context, req *pb.AvailabilityRequest) (*pb.DriverProfile, error) {
+	uid, err := authenticatedUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	driver, err := h.uc.SetAvailability(ctx, uid, req.Available)
+	if errors.Is(err, repository.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "driver not found")
+	}
+	if err != nil {
+		return nil, internal(ctx, "SetAvailability", err)
+	}
+	return toPBDriverProfile(driver), nil
+}
+
 func toPBDriverProfile(d *model.Driver) *pb.DriverProfile {
 	return &pb.DriverProfile{
 		DriverId:    d.ID,

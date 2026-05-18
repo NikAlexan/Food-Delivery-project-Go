@@ -29,6 +29,7 @@ const (
 	DeliveryService_CancelDelivery_FullMethodName       = "/delivery.DeliveryService/CancelDelivery"
 	DeliveryService_RegisterDriver_FullMethodName       = "/delivery.DeliveryService/RegisterDriver"
 	DeliveryService_GetMyDriver_FullMethodName          = "/delivery.DeliveryService/GetMyDriver"
+	DeliveryService_SetAvailability_FullMethodName      = "/delivery.DeliveryService/SetAvailability"
 )
 
 // DeliveryServiceClient is the client API for DeliveryService service.
@@ -45,6 +46,7 @@ type DeliveryServiceClient interface {
 	CancelDelivery(ctx context.Context, in *DeliveryIdRequest, opts ...grpc.CallOption) (*Delivery, error)
 	RegisterDriver(ctx context.Context, in *RegisterDriverRequest, opts ...grpc.CallOption) (*DriverProfile, error)
 	GetMyDriver(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*DriverProfile, error)
+	SetAvailability(ctx context.Context, in *AvailabilityRequest, opts ...grpc.CallOption) (*DriverProfile, error)
 }
 
 type deliveryServiceClient struct {
@@ -155,6 +157,16 @@ func (c *deliveryServiceClient) GetMyDriver(ctx context.Context, in *Empty, opts
 	return out, nil
 }
 
+func (c *deliveryServiceClient) SetAvailability(ctx context.Context, in *AvailabilityRequest, opts ...grpc.CallOption) (*DriverProfile, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DriverProfile)
+	err := c.cc.Invoke(ctx, DeliveryService_SetAvailability_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DeliveryServiceServer is the server API for DeliveryService service.
 // All implementations must embed UnimplementedDeliveryServiceServer
 // for forward compatibility.
@@ -169,6 +181,7 @@ type DeliveryServiceServer interface {
 	CancelDelivery(context.Context, *DeliveryIdRequest) (*Delivery, error)
 	RegisterDriver(context.Context, *RegisterDriverRequest) (*DriverProfile, error)
 	GetMyDriver(context.Context, *Empty) (*DriverProfile, error)
+	SetAvailability(context.Context, *AvailabilityRequest) (*DriverProfile, error)
 	mustEmbedUnimplementedDeliveryServiceServer()
 }
 
@@ -208,6 +221,9 @@ func (UnimplementedDeliveryServiceServer) RegisterDriver(context.Context, *Regis
 }
 func (UnimplementedDeliveryServiceServer) GetMyDriver(context.Context, *Empty) (*DriverProfile, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetMyDriver not implemented")
+}
+func (UnimplementedDeliveryServiceServer) SetAvailability(context.Context, *AvailabilityRequest) (*DriverProfile, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetAvailability not implemented")
 }
 func (UnimplementedDeliveryServiceServer) mustEmbedUnimplementedDeliveryServiceServer() {}
 func (UnimplementedDeliveryServiceServer) testEmbeddedByValue()                         {}
@@ -410,6 +426,24 @@ func _DeliveryService_GetMyDriver_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DeliveryService_SetAvailability_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AvailabilityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeliveryServiceServer).SetAvailability(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DeliveryService_SetAvailability_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeliveryServiceServer).SetAvailability(ctx, req.(*AvailabilityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DeliveryService_ServiceDesc is the grpc.ServiceDesc for DeliveryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -456,6 +490,10 @@ var DeliveryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMyDriver",
 			Handler:    _DeliveryService_GetMyDriver_Handler,
+		},
+		{
+			MethodName: "SetAvailability",
+			Handler:    _DeliveryService_SetAvailability_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

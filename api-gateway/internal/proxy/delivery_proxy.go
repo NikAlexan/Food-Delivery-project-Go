@@ -163,6 +163,20 @@ func (p *DeliveryProxy) GetMyDriver(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+func (p *DeliveryProxy) SetAvailability(c *gin.Context) {
+	var req pb.AvailabilityRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+	resp, err := p.client.SetAvailability(userContext(c), &req)
+	if err != nil {
+		respondGRPCError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
 func parseInt64Param(c *gin.Context, name string) (int64, bool) {
 	value, err := strconv.ParseInt(c.Param(name), 10, 64)
 	if err != nil {

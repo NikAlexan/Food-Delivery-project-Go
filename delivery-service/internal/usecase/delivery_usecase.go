@@ -40,6 +40,7 @@ type DeliveryUsecase interface {
 	HandleOrderCancelled(ctx context.Context, event model.OrderEvent) error
 	RegisterDriver(ctx context.Context, userID int64, name, email, phone string) (*model.Driver, error)
 	GetMyDriver(ctx context.Context, userID int64) (*model.Driver, error)
+	SetAvailability(ctx context.Context, userID int64, available bool) (*model.Driver, error)
 }
 
 type AssignInput struct {
@@ -242,4 +243,12 @@ func (u *deliveryUsecase) publishBestEffort(ctx context.Context, delivery *model
 	if err := u.publisher.PublishDeliveryCompleted(ctx, delivery); err != nil {
 		log.Printf("publish delivery.completed failed: %v", err)
 	}
+}
+
+func (u *deliveryUsecase) SetAvailability(ctx context.Context, userID int64, available bool) (*model.Driver, error) {
+	driver, err := u.repo.GetDriverByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return u.repo.SetDriverAvailability(ctx, driver.ID, available)
 }
