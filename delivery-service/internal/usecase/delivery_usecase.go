@@ -77,7 +77,7 @@ func (u *deliveryUsecase) AssignDriver(ctx context.Context, input AssignInput) (
 	}
 
 	if changed {
-		u.notifyBestEffort(ctx, delivery.UserEmail,
+		go u.notifyBestEffort(context.Background(), delivery.UserEmail,
 			fmt.Sprintf("Order #%d confirmed", delivery.OrderID),
 			fmt.Sprintf("Your order #%d has been assigned to courier %s.", delivery.OrderID, delivery.DriverName),
 		)
@@ -123,7 +123,7 @@ func (u *deliveryUsecase) CompleteDelivery(ctx context.Context, deliveryID int64
 	}
 
 	if changed {
-		u.notifyBestEffort(ctx, delivery.UserEmail,
+		go u.notifyBestEffort(context.Background(), delivery.UserEmail,
 			fmt.Sprintf("Order #%d delivered", delivery.OrderID),
 			fmt.Sprintf("Delivery #%d has been completed. Enjoy your meal.", delivery.ID),
 		)
@@ -182,7 +182,7 @@ func (u *deliveryUsecase) HandleOrderPaid(ctx context.Context, event model.Order
 	}
 
 	if changed {
-		u.notifyBestEffort(ctx, delivery.UserEmail,
+		go u.notifyBestEffort(context.Background(), delivery.UserEmail,
 			fmt.Sprintf("Order #%d is on the way", delivery.OrderID),
 			fmt.Sprintf("Courier %s is on the way with your order.", delivery.DriverName),
 		)
