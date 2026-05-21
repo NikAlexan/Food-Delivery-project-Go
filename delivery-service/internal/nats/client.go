@@ -69,6 +69,7 @@ func (c *Client) StartOrderConsumers(handler OrderHandler) error {
 			natsgo.Durable(sub.durable),
 			natsgo.ManualAck(),
 			natsgo.AckExplicit(),
+			natsgo.MaxDeliver(10),
 		); err != nil {
 			return err
 		}
