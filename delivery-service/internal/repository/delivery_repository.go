@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	ErrNotFound           = errors.New("not found")
-	ErrNoAvailableDriver  = errors.New("no available driver")
-	ErrAlreadyRegistered  = errors.New("already registered as driver")
+	ErrNotFound          = errors.New("not found")
+	ErrNoAvailableDriver = errors.New("no available driver")
+	ErrAlreadyRegistered = errors.New("already registered as driver")
 )
 
 type DeliveryRepository interface {
@@ -80,11 +80,15 @@ func (r *postgresDeliveryRepo) AssignDriver(ctx context.Context, orderID, userID
 	err = tx.QueryRowContext(ctx, `
 		SELECT d.id, d.name, d.email, d.phone, d.current_latitude, d.current_longitude
 		FROM drivers d
-		LEFT JOIN deliveries del ON del.driver_id = d.id AND del.status IN ('assigned', 'in_transit')
-		WHERE d.is_available = TRUE
-		GROUP BY d.id
-		ORDER BY COUNT(del.id) ASC, d.id ASC
-		LIMIT 1
+		WHERE d.id = (
+			SELECT d2.id
+			FROM drivers d2
+			LEFT JOIN deliveries del ON del.driver_id = d2.id AND del.status IN ('assigned', 'in_transit')
+			WHERE d2.is_available = TRUE
+			GROUP BY d2.id
+			ORDER BY COUNT(del.id) ASC, d2.id ASC
+			LIMIT 1
+		)
 		FOR UPDATE OF d SKIP LOCKED`,
 	).Scan(
 		&driver.ID,

@@ -88,3 +88,27 @@ func (m *mockDeliveryRepo) GetDeliveryHistory(ctx context.Context, userID int64)
 	}
 	return nil, args.Error(1)
 }
+
+func (m *mockDeliveryRepo) CreateDriver(ctx context.Context, d *model.Driver) (*model.Driver, error) {
+	args := m.Called(ctx, d)
+	if driver, ok := args.Get(0).(*model.Driver); ok {
+		return driver, args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func (m *mockDeliveryRepo) GetDriverByUserID(ctx context.Context, userID int64) (*model.Driver, error) {
+	args := m.Called(ctx, userID)
+	if driver, ok := args.Get(0).(*model.Driver); ok {
+		return driver, args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func (m *mockDeliveryRepo) SetDriverAvailability(ctx context.Context, driverID int64, available bool) (*model.Driver, error) {
+	args := m.Called(ctx, driverID, available)
+	if driver, ok := args.Get(0).(*model.Driver); ok {
+		return driver, args.Error(1)
+	}
+	return nil, args.Error(1)
+}
