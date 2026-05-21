@@ -9,7 +9,6 @@ import (
 	natsgo "github.com/nats-io/nats.go"
 
 	"food-delivery/delivery-service/internal/model"
-	"food-delivery/delivery-service/internal/repository"
 	"food-delivery/delivery-service/internal/usecase"
 )
 
