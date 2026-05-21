@@ -50,12 +50,12 @@ func (p *OrderProxy) Close() error {
 
 func (p *OrderProxy) CreateOrder(c *gin.Context) {
 	userID := c.GetInt64("user_id")
+	userEmail := c.GetString("user_email")
 
 	var body struct {
 		RestaurantID    int64            `json:"restaurant_id"`
 		Items           []orderItemInput `json:"items"`
 		DeliveryAddress string           `json:"delivery_address"`
-		UserEmail       string           `json:"user_email"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -67,7 +67,7 @@ func (p *OrderProxy) CreateOrder(c *gin.Context) {
 		RestaurantId:    body.RestaurantID,
 		Items:           toProtoItems(body.Items),
 		DeliveryAddress: body.DeliveryAddress,
-		UserEmail:       body.UserEmail,
+		UserEmail:       userEmail,
 	})
 	if err != nil {
 		respondGRPCError(c, err)

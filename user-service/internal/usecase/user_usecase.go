@@ -87,7 +87,7 @@ func (u *userUsecase) Login(ctx context.Context, email, password string) (string
 		return "", "", ErrInvalidCredentials
 	}
 
-	access, err := u.generateAccessToken(user.ID)
+	access, err := u.generateAccessToken(user.ID, user.Email)
 	if err != nil {
 		return "", "", err
 	}
@@ -160,7 +160,12 @@ func (u *userUsecase) RefreshToken(ctx context.Context, refreshToken string) (st
 		return "", "", err
 	}
 
-	access, err := u.generateAccessToken(rt.UserID)
+	user, err := u.repo.GetByID(ctx, rt.UserID)
+	if err != nil {
+		return "", "", err
+	}
+
+	access, err := u.generateAccessToken(rt.UserID, user.Email)
 	if err != nil {
 		return "", "", err
 	}
@@ -181,11 +186,12 @@ func (u *userUsecase) DeleteUser(ctx context.Context, userID int64) error {
 	return nil
 }
 
-func (u *userUsecase) generateAccessToken(userID int64) (string, error) {
+func (u *userUsecase) generateAccessToken(userID int64, email string) (string, error) {
 	claims := jwt.MapClaims{
-		"sub":  userID,
-		"exp":  time.Now().Add(15 * time.Minute).Unix(),
-		"type": "access",
+		"sub":   userID,
+		"email": email,
+		"exp":   time.Now().Add(15 * time.Minute).Unix(),
+		"type":  "access",
 	}
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(u.jwtSecret)
 }

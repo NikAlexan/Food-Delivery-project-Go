@@ -46,6 +46,9 @@ func JWTAuth(secret string) gin.HandlerFunc {
 		}
 
 		c.Set("user_id", int64(sub))
+		if email, _ := claims["email"].(string); email != "" {
+			c.Set("user_email", email)
+		}
 		c.Next()
 	}
 }
