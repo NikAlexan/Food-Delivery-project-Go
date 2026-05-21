@@ -42,6 +42,7 @@ func TestRefreshToken_Success(t *testing.T) {
 	}
 	repo.On("GetRefreshToken", ctx, hashedOld).Return(storedRT, nil)
 	repo.On("DeleteRefreshToken", ctx, hashedOld).Return(nil)
+	repo.On("GetByID", ctx, int64(2)).Return(user, nil)
 	repo.On("SaveRefreshToken", ctx, mockRefreshToken(2)).Return(nil).Once()
 
 	newAccess, newRefresh, err := uc.RefreshToken(ctx, oldRefresh)

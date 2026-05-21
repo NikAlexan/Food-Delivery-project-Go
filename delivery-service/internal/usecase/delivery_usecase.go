@@ -174,6 +174,9 @@ func (u *deliveryUsecase) HandleOrderCreated(ctx context.Context, event model.Or
 
 func (u *deliveryUsecase) HandleOrderPaid(ctx context.Context, event model.OrderEvent) error {
 	delivery, changed, err := u.repo.MarkInTransitByOrderID(ctx, event.OrderID)
+	if errors.Is(err, repository.ErrNotFound) {
+		return err // delivery not yet created; wrapHandler will Nak and retry
+	}
 	if err != nil {
 		return err
 	}

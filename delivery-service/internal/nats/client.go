@@ -125,8 +125,9 @@ func (c *Client) wrapHandler(subject string, handle func(context.Context, model.
 
 		if err := handle(context.Background(), event); err != nil {
 			log.Printf("nats %s handler failed: %v", subject, err)
-			// Term = don't redeliver; Nak = retry. Use Term for permanent errors.
-			if errors.Is(err, usecase.ErrInvalidDelivery) || errors.Is(err, repository.ErrNotFound) {
+			// Term = don't redeliver; Nak = retry. Use Term for permanent errors only.
+			// ErrNotFound is retried: order.paid can arrive before order.created is processed.
+			if errors.Is(err, usecase.ErrInvalidDelivery) {
 				_ = msg.Term()
 			} else {
 				_ = msg.Nak()
