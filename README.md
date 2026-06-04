@@ -1,6 +1,7 @@
 # 🍔 Food Delivery Service
 
 > Микросервисный проект на Go — распределение задач по участникам команды.
+> Деплой и конфиги - [сссылка](https://github.com/NikAlexan/sre-final)
 
 ---
 
