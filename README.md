@@ -58,8 +58,6 @@ Svc     Svc       Svc          Svc
 - Rate limiting
 - Логирование запросов
 
-**Стек:** `net/http` + `gorilla/mux` или `fiber` / `gin`
-
 ---
 
 ## 👤 Nikita Vassilenko — User Service
